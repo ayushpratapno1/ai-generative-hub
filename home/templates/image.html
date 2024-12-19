@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+{% load static %}
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Image Generator</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'apple-touch-icon.png' %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Favicon Links -->
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicon-16x16.png' %}">
+
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+       .dark-mode .me-2 select{
+            background-color: rgb(178, 178, 178);
+            color: rgb(0, 0, 0);
+        }
+        .me-2 select{
+            color: black;
+            background-color: rgb(204, 204, 204);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Main content area -->
+    <div class="main-content">
+        <nav class="navbar navbar-expand-lg navbar-custom">
+            <div class="container-fluid">
+                <h3 class="navbar-brand" style="font-family: 'Roboto', sans-serif;">Image Generator</h3>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+            </div>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Contact</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        <div class="toggle-container">
+            <span id="emoji">🌞</span> <!-- Day emoji -->
+            <label class="toggle-switch">
+                <input type="checkbox" id="toggle-theme">
+                <span class="toggle-slider"></span>
+            </label>
+            <span>🌙</span> <!-- Night emoji -->
+        </div>
+
+        <!-- Sidebar -->
+        <div id="sidebar" class="sidebar">
+            <div id="child">
+                <a href="/">Home</a>
+                <a href="/chat">My Chat-bot</a>
+            </div>
+        </div>
+
+        <!-- Sidebar Toggle Button -->
+        <div id="sidebar-toggle" class="sidebar-toggle">
+            <span id="sidebar-toggle">☰</span>
+        </div>
+
+        <div class="container mt-4">
+            <!-- Chat Container -->
+            <div class="chat-container d-flex flex-column" id="chat-container">
+                <!-- Initial Bot Message -->
+                <div id="bot-message" class="bot-message chat-bubble">
+                    <strong>Julie:</strong> Hi! Enter your prompt to generate an image.
+                    <span class="timestamp">12:00 PM</span>
+
+                </div>
+            </div>
+
+            <!-- Input and Submit Button -->
+            <div style="width: 100%;" class="input-container mt-3">
+                <form style="margin: auto;" method="post" id="imageForm" class="d-flex align-items-start">
+                    {% csrf_token %}
+
+                    <!-- Textarea for Prompt -->
+                    <div style="bottom: 20px;" class="input-container">
+                        <textarea style="width: 800px; top: 5px;" id="prompt" name="prompt" class="form-control expanding-textarea" rows="1"
+                            placeholder="" required></textarea>
+                        <button style="padding: 10px 15px;" type="submit" id="submit" class="btn btn-dark">Generate</button>
+                    </div>
+
+                    <!-- Select API -->
+                    <div style="width: 150px; left: 10px; position: relative; bottom: -8px;" class="me-2">
+                        <select id="api" name="api" class="form-select" required>
+                            <option value="hugging_face">Hugging Face</option>
+                            <option value="fal_ai">Falcon AI</option>
+                        </select>
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+
+    </div>
+
+    <script src="{% static 'js/image.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+
+    <script>
+        const imageGenerationUrl = "{% url 'image_generation' %}";
+        const textarea = document.getElementById("prompt");
+    const placeholderText = "Type your image description here...";
+    let index = 0;
+
+    function typePlaceholder() {
+      if (index < placeholderText.length) {
+        textarea.setAttribute("placeholder", textarea.getAttribute("placeholder") + placeholderText[index]);
+        index++;
+        setTimeout(typePlaceholder, 50); // Adjust typing speed here
+      }
+    }
+
+    // Start typing placeholder on page load
+    window.onload = () => {
+      typePlaceholder();
+    };
+
+    // Remove placeholder on focus
+    textarea.addEventListener("focus", () => {
+      textarea.setAttribute("placeholder", "");
+    });
+
+    // Restore placeholder on blur if no user input
+    textarea.addEventListener("blur", () => {
+      if (!textarea.value) {
+        index = 0; // Reset index to retype placeholder
+        textarea.setAttribute("placeholder", "");
+        typePlaceholder();
+      }
+    });
+    </script>
+    
+      
+      
+</body>
+
+</html>

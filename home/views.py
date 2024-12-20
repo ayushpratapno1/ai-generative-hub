@@ -136,20 +136,13 @@ def image_generation(request):
                 # Convert bytes to image
                 image = Image.open(io.BytesIO(image_bytes))
 
-                # Save the image in the 'media' directory
-                file_name = f"generated_image_{prompt.replace(' ', '_')}.png"
-                file_path = os.path.join(settings.MEDIA_ROOT, "generated_images", file_name)
+                # Save the image to an in-memory buffer (without saving to disk)
+                img_io = io.BytesIO()
+                image.save(img_io, 'PNG')
+                img_io.seek(0)
 
-                # Ensure the directory exists
-                os.makedirs(os.path.dirname(file_path), exist_ok=True)
-
-                # Save the image to the file system
-                image.save(file_path)
-
-                # Get the URL of the saved image
-                generated_image_url = os.path.join(settings.MEDIA_URL, "generated_images", file_name)
-
-                return JsonResponse({"status": "success", "result": generated_image_url})
+                # Return the image as an HTTP response
+                return HttpResponse(img_io, content_type='image/png')
 
             else:
                 return JsonResponse({"status": "error", "message": "Invalid API choice."})

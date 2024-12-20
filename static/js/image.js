@@ -87,39 +87,63 @@ document.addEventListener("DOMContentLoaded", () => {
     data.append('api', apiChoice);
     data.append('csrfmiddlewaretoken', csrfmiddlewaretoken);
 
-    const typingBubble = showTypingIndicator();
+    const typingBubble = showTypingIndicator();  // Show typing indicator
 
     try {
-      const response = await fetch(imageGenerationUrl, {
-        method: 'POST',
-        body: data,
-        headers: { 'X-CSRFToken': csrfmiddlewaretoken },
-        credentials: 'same-origin',
-      });
+        const response = await fetch(imageGenerationUrl, {
+            method: 'POST',
+            body: data,
+            headers: { 'X-CSRFToken': csrfmiddlewaretoken },
+            credentials: 'same-origin',
+        });
 
-      typingBubble.remove();
+        if (!response.ok) {
+            console.error("Server responded with an error:", response.statusText);
+            typingBubble.remove();  // Ensure typing bubble is removed
+            return { message: "Error: Unable to get response" };
+        }
 
-      if (!response.ok) {
-        console.error("Server responded with an error:", response.statusText);
-        return { message: "Error: Unable to get response" };
-      }
+        // Check if the response is a JSON or an image (Blob)
+        const contentType = response.headers.get('Content-Type');
+        if (contentType && contentType.includes('image/')) {
+            // Handle the response as an image (Blob)
+            const imageBlob = await response.blob();
+            const imageUrl = URL.createObjectURL(imageBlob); // Create an object URL for the image
 
-      const jsonResponse = await response.json();
-      if (jsonResponse.status === "success") {
-          return {
-              message: `
-                  <p style=" margin-bottom: 10px;">
-                      Image generated successfully!
-                  </p>
-                  <img src="${jsonResponse.result}" alt="Generated Image" style="max-width: 100%; border-radius: 8px;">
-              `
-          }
-      }
+            typingBubble.remove();  // Remove typing bubble after image is ready
+
+            return {
+                message: `
+                    <p style="margin-bottom: 10px;">
+                        Image generated successfully!
+                    </p>
+                    <img src="${imageUrl}" alt="Generated Image" style="max-width: 100%; border-radius: 8px;">
+                `
+            };
+        } else {
+            // If the response is JSON (used for logs or error messages)
+            const jsonResponse = await response.json();
+            typingBubble.remove();  // Remove typing bubble after receiving the response
+
+            if (jsonResponse.status === "success") {
+                return {
+                    message: `
+                        <p style="margin-bottom: 10px;">
+                            Image generated successfully!
+                        </p>
+                        <img src="${jsonResponse.result}" alt="Generated Image" style="max-width: 100%; border-radius: 8px;">
+                    `
+                };
+            }
+        }
     } catch (error) {
-      console.error("Fetch error:", error);
-      return { message: "Error: Unable to fetch response" };
+        console.error("Fetch error:", error);
+        typingBubble.remove();  // Remove typing bubble in case of error
+        return { message: "Error: Unable to fetch response" };
     }
-  };
+};
+
+
 
   // Handle submit button click
   submitButton.addEventListener("click", async (event) => {

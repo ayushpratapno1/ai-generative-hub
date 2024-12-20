@@ -21,8 +21,9 @@
             font-family: 'Arial', sans-serif;
             background: linear-gradient(135deg, #1f1c2c, #928dab);
             color: #f3f3f3;
+            overflow-x: hidden; /* Prevent horizontal scrolling */
         }
-
+    
         header {
             text-align: center;
             padding: 1rem 1rem;
@@ -32,79 +33,70 @@
             top: 0;
             z-index: 1000;
         }
-
+    
         header h1 {
-            font-size: 3rem;
+            font-size: 2rem; /* Reduced for better fit on small screens */
             margin: 0;
             letter-spacing: 2px;
             text-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
         }
-
+    
         header p {
-            font-size: 1.2rem;
+            font-size: 1rem;
             margin: 0.5rem 0 0;
         }
-
+    
         .container {
             max-width: 1200px;
             margin: 2rem auto;
             padding: 1rem;
             display: flex;
-            justify-content: space-between;
+            flex-wrap: wrap; /* Allow wrapping on small screens */
+            justify-content: center; /* Center items on smaller screens */
             gap: 2rem;
         }
-
-        #text {
-            flex: 1 1 45%;
-            /* Takes 45% of the container's width */
+    
+        #text, #image {
+            flex: 1 1 100%; /* Default to full width */
             background: rgba(0, 0, 0, 0.6);
-            padding: 2rem;
+            padding: 1.5rem;
             border-radius: 15px;
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
             text-align: center;
+            max-width: 400px; /* Limit maximum width for better scaling */
         }
-
-        #image {
-            flex: 1 1 45%;
-            /* Takes 45% of the container's width */
-            background: rgba(0, 0, 0, 0.6);
-            padding: 2rem;
-            border-radius: 15px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-            text-align: center;
-        }
-
+    
         .h2 {
-            font-size: 2rem;
+            font-size: 1.8rem;
             margin-bottom: 1rem;
             color: aqua;
             text-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
         }
-
+    
         .p {
             font-size: 1rem;
             line-height: 1.8;
             margin: 0.5rem 0;
         }
-
+    
         .btn {
             display: inline-block;
             margin-top: 1rem;
-            padding: 0.8rem 2rem;
+            padding: 0.6rem 1.5rem;
             background: linear-gradient(90deg, #00e6e6, #8dffcd);
             color: #333;
             text-decoration: none;
             border-radius: 25px;
-            font-size: 1.1rem;
+            font-size: 1rem;
             transition: 0.3s ease;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
         }
-
+    
         .btn:hover {
             background: linear-gradient(90deg, #8dffcd, #00e6e6);
             transform: translateY(-3px);
         }
-
+    
         footer {
             text-align: center;
             padding: 1rem;
@@ -112,27 +104,62 @@
             color: #f3f3f3;
             margin-top: 2rem;
         }
-
+    
         /* Animations */
         .animated-text {
-            font-size: 1.2rem;
+            font-size: 1rem;
             background: linear-gradient(90deg, #00e6e6, #8dffcd);
             background-clip: text;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             animation: shimmer 3s infinite;
         }
-
+    
         @keyframes shimmer {
             0% {
                 background-position: -200%;
             }
-
+    
             100% {
                 background-position: 200%;
             }
         }
+    
+        /* Media Queries for Small Screens */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.5rem;
+            }
+    
+            header p {
+                font-size: 0.9rem;
+            }
+    
+            #text, #image {
+                padding: 1rem;
+            }
+    
+            .h2 {
+                font-size: 1.5rem;
+            }
+    
+            .btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+        }
+    
+        @media (max-width: 480px) {
+            header h1 {
+                font-size: 1.2rem;
+            }
+    
+            .h2 {
+                font-size: 1.2rem;
+            }
+        }
     </style>
+    
 </head>
 
 <body>

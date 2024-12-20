@@ -11,14 +11,16 @@ import fal_client
 import markdown2
 import google.generativeai as genai
 
-# Set the API Key directly (for simplicity; use environment variables in production)
-os.environ["FAL_KEY"] = "f718fafd-e662-4528-b73c-b9c67267abfe:b82b2b3db6662b306bb728d8381e42a4"
-# hugging face api
-API_URL = "https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-dev"
-HEADERS = {"Authorization": "Bearer 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"}
+# FAL API Key
+FAL_KEY = os.environ.get("FAL_KEY")
 
-# Configure the API key for Google Generative AI
-genai.configure(api_key="AIzaSyBU4cynzWrrwXLn79FQ9x9DUTWDxOYm648")
+# Hugging Face API
+API_URL = os.environ.get("HUGGINGFACE_API_URL")
+HEADERS = {"Authorization": os.environ.get("HUGGINGFACE_AUTH_KEY")}
+
+# Google Generative AI Key
+import google.generativeai as genai
+genai.configure(api_key=os.environ.get("GOOGLE_GENAI_API_KEY"))
 
 # Add logging
 logger = logging.getLogger(__name__)

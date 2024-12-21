@@ -194,7 +194,7 @@ document.getElementById('sidebar-toggle').addEventListener('click', function() {
   
   // Check if sidebar is active and adjust margin-left of the main content
   if (sidebar.classList.contains('active')) {
-    mainContent.style.marginLeft = '250px';  // Shift content when sidebar is open
+    mainContent.style.marginLeft = '0';  // Shift content when sidebar is open
   } else {
     mainContent.style.marginLeft = '0';  // Reset when sidebar is closed
   }

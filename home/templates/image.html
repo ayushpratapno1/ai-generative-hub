@@ -15,14 +15,65 @@
 
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <style>
-       .dark-mode .me-2 select{
-            background-color: rgb(178, 178, 178);
-            color: rgb(0, 0, 0);
+
+.chat-container {
+    position: relative;
+}
+/* Chat Container on Small Screens */
+@media (max-width: 576px) {
+  .chat-container {
+    top: 20px;
+  }
+}
+
+        /* API Selection Styling */
+        .me2{
+            background-color: #1d1f21; /* Match navbar background color */
+            color: white; /* Text color */
         }
-        .me-2 select{
-            color: black;
-            background-color: rgb(204, 204, 204);
-        }
+.api-selection {
+    display: flex;
+    align-items: center;  /* Align the select vertically centered */
+    margin-left: 15px; /* Space from the navbar items */
+    background-color: #1d1f21; /* Match navbar background color */
+    color: white; /* Text color */
+}
+
+/* Customize the select dropdown */
+.api-selection select {
+    background-color: #1d1f21; /* Match navbar background color */
+    color: white; /* Text color */
+    border-radius: 5px; /* Rounded corners */
+    padding: 10px 15px; /* Padding for the select element */
+    font-size: 16px; /* Font size to match other navbar items */
+    font-weight: 600; /* Font weight */
+    transition: background-color 0.3s, border-color 0.3s; /* Smooth transition on hover */
+}
+
+/* Select dropdown hover effect */
+.api-selection select:hover {
+    background-color: #007bff; /* Change background on hover */
+    border-color: #0056b3; /* Darken border on hover */
+    color: white; /* Ensure text stays white on hover */
+}
+
+/* Select dropdown focus effect */
+.api-selection select:focus {
+    outline: none; /* Remove default focus outline */
+    background-color: #007bff; /* Same as hover background */
+    border-color: #0056b3; /* Same as hover border */
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Add subtle focus shadow */
+}
+
+/* Responsive Adjustments */
+@media (max-width: 992px) {
+    /* Adjust the width of the select on smaller screens */
+    .api-selection select {
+        width: 100%; /* Full width on smaller screens */
+        max-width: 250px; /* Limit width for better design on small screens */
+        margin-top: 10px; /* Add space between the navbar elements */
+    }
+}
     </style>
 </head>
 
@@ -36,6 +87,14 @@
                     aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
+            </div>
+            
+            <!-- Select API -->
+            <div  class="me-2">
+                <select id="api" name="api" class="form-select" required>
+                    <option value="hugging_face">Hugging Face</option>
+                    <option value="fal_ai">Falcon AI</option>
+                </select>
             </div>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
@@ -65,49 +124,43 @@
             <div id="child">
                 <a href="/">Home</a>
                 <a href="/chat">My Chat-bot</a>
+            
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar Toggle Button -->
+    <div id="sidebar-toggle" class="sidebar-toggle">
+        <span id="sidebar-toggle">☰</span>
+    </div>
+
+    <div class="container mt-4">
+        <!-- Chat Container -->
+        <div class="chat-container d-flex flex-column" id="chat-container">
+            <!-- Initial Bot Message -->
+            <div id="bot-message" class="bot-message chat-bubble">
+                <strong>Julie:</strong> Hi! Enter your prompt to generate an image.
+                <span class="timestamp">12:00 PM</span>
+
             </div>
         </div>
 
-        <!-- Sidebar Toggle Button -->
-        <div id="sidebar-toggle" class="sidebar-toggle">
-            <span id="sidebar-toggle">☰</span>
-        </div>
+        <!-- Input and Submit Button -->
+        <div style="width: 100%;" class="input-container mt-3">
+            <form style="margin: auto;" method="post" id="imageForm" class="d-flex align-items-start">
+                {% csrf_token %}
 
-        <div class="container mt-4">
-            <!-- Chat Container -->
-            <div class="chat-container d-flex flex-column" id="chat-container">
-                <!-- Initial Bot Message -->
-                <div id="bot-message" class="bot-message chat-bubble">
-                    <strong>Julie:</strong> Hi! Enter your prompt to generate an image.
-                    <span class="timestamp">12:00 PM</span>
-
+                <!-- Textarea for Prompt -->
+                <div style="bottom: 20px;" class="input-container">
+                    <textarea style="width: 800px; top: 5px;" id="prompt" name="prompt"
+                        class="form-control expanding-textarea" rows="1" placeholder="" required></textarea>
+                    <button type="submit" id="submit" class="btn btn-dark">Generate</button>
                 </div>
-            </div>
+                
+            </form>
 
-            <!-- Input and Submit Button -->
-            <div style="width: 100%;" class="input-container mt-3">
-                <form style="margin: auto;" method="post" id="imageForm" class="d-flex align-items-start">
-                    {% csrf_token %}
-
-                    <!-- Textarea for Prompt -->
-                    <div style="bottom: 20px;" class="input-container">
-                        <textarea style="width: 800px; top: 5px;" id="prompt" name="prompt" class="form-control expanding-textarea" rows="1"
-                            placeholder="" required></textarea>
-                        <button style="padding: 10px 15px;" type="submit" id="submit" class="btn btn-dark">Generate</button>
-                    </div>
-
-                    <!-- Select API -->
-                    <div style="width: 150px; left: 10px; position: relative; bottom: -8px;" class="me-2">
-                        <select id="api" name="api" class="form-select" required>
-                            <option value="hugging_face">Hugging Face</option>
-                            <option value="fal_ai">Falcon AI</option>
-                        </select>
-                    </div>
-
-                </form>
-
-            </div>
         </div>
+    </div>
 
     </div>
 
@@ -117,40 +170,50 @@
 
     <script>
         const imageGenerationUrl = "{% url 'image_generation' %}";
-        const textarea = document.getElementById("prompt");
-    const placeholderText = "Type your image description here...";
-    let index = 0;
+        document.addEventListener("DOMContentLoaded", () => {
+            const textarea = document.getElementById("prompt");
+            const placeholderText = "Type your image description here...";
+            let index = 0;
+            let typingInterval;
 
-    function typePlaceholder() {
-      if (index < placeholderText.length) {
-        textarea.setAttribute("placeholder", textarea.getAttribute("placeholder") + placeholderText[index]);
-        index++;
-        setTimeout(typePlaceholder, 50); // Adjust typing speed here
-      }
-    }
+            // Function to type the placeholder text
+            const typePlaceholder = () => {
+                if (index < placeholderText.length) {
+                    textarea.setAttribute(
+                        "placeholder",
+                        placeholderText.slice(0, index + 1) // Efficiently slice the string
+                    );
+                    index++;
+                } else {
+                    clearInterval(typingInterval); // Stop typing when complete
+                }
+            };
 
-    // Start typing placeholder on page load
-    window.onload = () => {
-      typePlaceholder();
-    };
+            // Function to reset and retype the placeholder
+            const resetPlaceholder = () => {
+                if (!textarea.value) {
+                    index = 0;
+                    textarea.setAttribute("placeholder", ""); // Clear placeholder
+                    typingInterval = setInterval(typePlaceholder, 50); // Restart typing effect
+                }
+            };
 
-    // Remove placeholder on focus
-    textarea.addEventListener("focus", () => {
-      textarea.setAttribute("placeholder", "");
-    });
+            // Start typing placeholder on page load
+            typingInterval = setInterval(typePlaceholder, 50);
 
-    // Restore placeholder on blur if no user input
-    textarea.addEventListener("blur", () => {
-      if (!textarea.value) {
-        index = 0; // Reset index to retype placeholder
-        textarea.setAttribute("placeholder", "");
-        typePlaceholder();
-      }
-    });
+            // Event listeners for focus and blur
+            textarea.addEventListener("focus", () => {
+                clearInterval(typingInterval); // Stop typing
+                textarea.setAttribute("placeholder", ""); // Clear placeholder
+            });
+
+            textarea.addEventListener("blur", resetPlaceholder);
+        });
+
     </script>
-    
-      
-      
+
+
+
 </body>
 
 </html>

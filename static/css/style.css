@@ -28,10 +28,10 @@
 
 /* Sidebar container */
 #sidebar {
-  width: 30%;
+  width: 60%;
   position: fixed;
   top: 76px; /* Keep it below the navbar */
-  left: -50%;
+  left: -60%;
   height: calc(100% - 60px); /* Adjust the height so it doesn't go under the navbar */
   transition: left 0.3s ease;
   background: #f3f3f3;

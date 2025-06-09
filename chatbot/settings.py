@@ -18,13 +18,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 MEDIA_URL = '/media/'  # URL to access media files
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 STATIC_URL = '/static/'
-
-# ✅ This is where your development static files (like style.css) live
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
-
-# ✅ This is where Django collects static files for production
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 

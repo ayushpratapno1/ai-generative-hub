@@ -27,5 +27,5 @@ urlpatterns = [
     path('api', chatAPI, name='chatAPI'),
     path('image_generation/', image_generation, name='image_generation'),  # Add this line
 ]
-if settings.DEBUG:Add commentMore actions
+if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

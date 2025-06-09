@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="en">
 {% load static %}
@@ -207,3 +208,214 @@
 </body>
 
 </html>
+=======
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Generative Hub</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'apple-touch-icon.png' %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Favicon Links -->
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicon-16x16.png' %}">
+
+    <style>
+        /* General Styles */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1f1c2c, #928dab);
+            color: #f3f3f3;
+            overflow-x: hidden; /* Prevent horizontal scrolling */
+        }
+    
+        header {
+            text-align: center;
+            padding: 1rem 1rem;
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+    
+        header h1 {
+            font-size: 2rem; /* Reduced for better fit on small screens */
+            margin: 0;
+            letter-spacing: 2px;
+            text-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+        }
+    
+        header p {
+            font-size: 1rem;
+            margin: 0.5rem 0 0;
+        }
+    
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 1rem;
+            display: flex;
+            flex-wrap: wrap; /* Allow wrapping on small screens */
+            justify-content: center; /* Center items on smaller screens */
+            gap: 2rem;
+        }
+    
+        #text, #image {
+            flex: 1 1 100%; /* Default to full width */
+            background: rgba(0, 0, 0, 0.6);
+            padding: 1.5rem;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 400px; /* Limit maximum width for better scaling */
+        }
+    
+        .h2 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: aqua;
+            text-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+        }
+    
+        .p {
+            font-size: 1rem;
+            line-height: 1.8;
+            margin: 0.5rem 0;
+        }
+    
+        .btn {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 0.6rem 1.5rem;
+            background: linear-gradient(90deg, #00e6e6, #8dffcd);
+            color: #333;
+            text-decoration: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            transition: 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+    
+        .btn:hover {
+            background: linear-gradient(90deg, #8dffcd, #00e6e6);
+            transform: translateY(-3px);
+        }
+    
+        footer {
+            text-align: center;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.8);
+            color: #f3f3f3;
+            margin-top: 2rem;
+        }
+    
+        /* Animations */
+        .animated-text {
+            font-size: 1rem;
+            background: linear-gradient(90deg, #00e6e6, #8dffcd);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shimmer 3s infinite;
+        }
+    
+        @keyframes shimmer {
+            0% {
+                background-position: -200%;
+            }
+    
+            100% {
+                background-position: 200%;
+            }
+        }
+    
+        /* Media Queries for Small Screens */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.5rem;
+            }
+    
+            header p {
+                font-size: 0.9rem;
+            }
+    
+            #text, #image {
+                padding: 1rem;
+            }
+    
+            .h2 {
+                font-size: 1.5rem;
+            }
+    
+            .btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+        }
+    
+        @media (max-width: 480px) {
+            header h1 {
+                font-size: 1.2rem;
+            }
+    
+            .h2 {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+    
+</head>
+
+<body>
+    <header>
+        <h1>AI Generative Hub</h1>
+        <p class="animated-text">Discover the Future of AI-Powered Creativity</p>
+    </header>
+    <main class="container">
+        <!-- Text-to-Text Section (Left) -->
+        <div id="text">
+            <h2 class="h2">Text-to-Text Generation</h2>
+            <p class="p">
+                Leverage the power of Google's Generative AI to create human-like text.
+                This technology is ideal for creating conversational agents, drafting content, summarizing text, and
+                even writing code.
+                It offers unmatched contextual understanding and adaptability for diverse applications.
+            </p>
+            <p class="p">
+                With this tool, you can generate thoughtful, coherent responses in seconds,
+                making it perfect for chatbots, content creators, or anyone seeking an efficient way to manage textual
+                data.
+            </p>
+            <a href="/chat" class="btn">Explore Text-to-Text</a>
+        </div>
+
+        <!-- Text-to-Image Section (Right) -->
+        <div id="image">
+            <h2 class="h2">Text-to-Image Generation</h2>
+            <p class="p">
+               <h4> Experience the Fusion of Innovation and Art</h4>
+                Welcome to a new dimension of creativity, powered by cutting-edge AI technology!
+
+                <h4>Why Choose Us?</h4>
+                At the heart of our platform lies the groundbreaking FLUX.1-dev model from Hugging Face, renowned for
+                its advanced natural language understanding and creativity in transforming ideas into expressive visual
+                narratives. Paired with the unmatched artistry of Stable Diffusion XL Lightning, we deliver
+                hyper-realistic, vivid, and customizable image generation that captures imagination like never before.
+            </p>
+            <a href="/image" class="btn">Explore Text-to-Image</a>
+        </div>
+    </main>
+    <footer>
+        <p>&copy; 2024 AI Generative Hub. Crafted for the Future.</p>
+    </footer>
+</body>
+
+</html>
+>>>>>>> ef8391355beb97cb9219d2c6a2ac8ec4ba701946

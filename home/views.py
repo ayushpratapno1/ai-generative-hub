@@ -20,7 +20,7 @@ HEADERS = {"Authorization": os.environ.get("HUGGINGFACE_AUTH_KEY")}
 
 # Google Generative AI Key
 import google.generativeai as genai
-genai.configure(api_key=os.environ.get("GOOGLE_GENAI_API_KEY"))
+genai.configure(api_key="AIzaSyBU4cynzWrrwXLn79FQ9x9DUTWDxOYm648")
 
 # Add logging
 logger = logging.getLogger(__name__)

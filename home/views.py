@@ -43,7 +43,6 @@ def chatAPI(request):
         if not prompt:
             return JsonResponse({"error": "No prompt provided"}, status=400)
 
-        # Define configuration for the model generation
         generation_config = {
             "temperature": 1,
             "top_p": 0.95,
@@ -53,30 +52,32 @@ def chatAPI(request):
         }
 
         try:
-            # Initialize the model with the specified configuration
+            # ✅ Load chat history from session
+            chat_history = request.session.get("chat_history", [])
+
+            # ✅ Auto-clear history if any item uses "content" instead of "parts"
+            if any("content" in msg for msg in chat_history):
+                chat_history = []
+                request.session["chat_history"] = []
+
             model = genai.GenerativeModel(
                 model_name="gemini-1.5-flash",
                 generation_config=generation_config,
             )
 
-            # Start a new chat session
-            chat_session = model.start_chat(history=[])
+            # ✅ Create chat session with valid history
+            chat_session = model.start_chat(history=chat_history)
 
-            # Send the prompt to the model
+            # ✅ Send prompt
             response = chat_session.send_message(prompt)
 
-            # Log the full response for debugging
-            logger.info(f"Full response: {response}")
+            # ✅ Update and save history with correct format
+            chat_history.append({"role": "user", "parts": [prompt]})
+            request.session["chat_history"] = chat_history
+            
 
-            if hasattr(response, 'text') and response.text:
-                reply = response.text.strip()  # Ensure it's properly cleaned
-            else:
-                reply = "No valid response from the model."
+            html_reply = markdown2.markdown(response.text.strip())
 
-            # Convert the model's reply from markdown to HTML
-            html_reply = markdown2.markdown(reply)
-
-            # Return the response to the frontend as a JSON object (HTML content)
             return JsonResponse({"message": html_reply})
 
         except Exception as e:

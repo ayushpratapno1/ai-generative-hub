@@ -15,13 +15,10 @@ import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Media files (uploaded files like images)
-MEDIA_URL = '/media/'  # URL to access media files
+MEDIA_URL = '/media/'  # URL to access media filesAdd commentMore actions
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
-]
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 
 

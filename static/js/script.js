@@ -1,3 +1,10 @@
+// At the top of the file, add configuration constants
+const CONFIG = {
+    SCROLL_THRESHOLD: 100,
+    DEFAULT_TEXTAREA_HEIGHT: '50px',
+    TYPING_ANIMATION_DURATION: '1.5s'
+};
+
 document.addEventListener("DOMContentLoaded", () => {
   const chatContainer = document.querySelector("#chat-container");
   const typedPrompt = document.querySelector("#typedPrompt");
@@ -5,6 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const csrfmiddlewaretoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
   const toggleSwitch = document.getElementById("toggle-theme");
   const emoji = document.getElementById("emoji");
+  const scrollToBottomBtn = document.getElementById('scrollToBottom');
 
   // Theme setup
   if (localStorage.getItem("theme") === "dark") {
@@ -145,5 +153,23 @@ document.addEventListener("DOMContentLoaded", () => {
     const mainContent = document.querySelector('.main-content');
     sidebar.classList.toggle('active');
     mainContent.style.marginLeft = '0';
+  });
+
+  // Add scroll event listener to show/hide the button
+  chatContainer.addEventListener('scroll', () => {
+    // Show button when user scrolls up (not at bottom)
+    if (chatContainer.scrollHeight - chatContainer.scrollTop > chatContainer.clientHeight + 100) {
+      scrollToBottomBtn.style.display = 'flex';
+    } else {
+      scrollToBottomBtn.style.display = 'none';
+    }
+  });
+
+  // Add click event listener to scroll to bottom
+  scrollToBottomBtn.addEventListener('click', () => {
+    chatContainer.scrollTo({
+      top: chatContainer.scrollHeight,
+      behavior: 'smooth'
+    });
   });
 });

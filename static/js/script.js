@@ -50,11 +50,24 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   };
 
+  let messageCount = 0;
+
+  const formatTimestamp = () => {
+    const now = new Date();
+    return now.toLocaleTimeString([], { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        hour12: true 
+    });
+  };
+
   const addChatBubble = (text, isBot = false, isTyping = false) => {
+    messageCount++;
     const bubble = document.createElement("div");
     bubble.classList.add("chat-bubble", isBot ? "bot-message" : "user-message");
+    bubble.id = `message-${messageCount}`;
 
-    const timestamp = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    const timestamp = formatTimestamp();
     const typingHTML = `<em>Julie is typing<span class="dots"></span></em>`;
     const messageHTML = `
       <strong>${isBot ? "Julie" : "Ayush"}:</strong> ${isBot ? renderCode(text) : escapeHTML(text)}
@@ -81,16 +94,22 @@ document.addEventListener("DOMContentLoaded", () => {
     return addChatBubble("", true, true);
   };
 
-  // Add this function to handle button state
+  // Add a flag to track API processing state
+  let isProcessing = false;
+
+  // Modify the toggleSubmitButton function
   const toggleSubmitButton = (disabled) => {
+    isProcessing = disabled;
     submit.disabled = disabled;
     submit.style.opacity = disabled ? '0.6' : '1';
     submit.style.cursor = disabled ? 'not-allowed' : 'pointer';
+    // Add loading text
+    submit.textContent = disabled ? 'Processing...' : 'Submit';
   };
 
-  const fetchData = async () => {
+  const fetchData = async (message) => {
     const data = new FormData();
-    data.append('prompt', typedPrompt.value);
+    data.append('prompt', message);
     data.append('csrfmiddlewaretoken', csrfmiddlewaretoken);
     const typingBubble = showTypingIndicator();
     
@@ -120,43 +139,98 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error("Fetch error:", error);
       return { message: "Error: Unable to fetch response" };
     } finally {
-      // Re-enable submit button
+      // Re-enable submit button and check emptiness
       toggleSubmitButton(false);
+      checkTextareaEmpty();
     }
   };
 
-  // Auto-resize on input
+  // Add this function to check if textarea is empty
+  const checkTextareaEmpty = () => {
+    const isEmpty = !typedPrompt.value.trim();
+    submit.disabled = isEmpty;
+    submit.style.opacity = isEmpty ? '0.6' : '1';
+    submit.style.cursor = isEmpty ? 'not-allowed' : 'pointer';
+    return isEmpty;
+  };
+
+  // Modify the input event listener to check emptiness
   typedPrompt.addEventListener('input', () => {
     typedPrompt.style.height = 'auto';
     typedPrompt.style.height = typedPrompt.scrollHeight + 'px';
+    checkTextareaEmpty(); // Check on every input
   });
+
+  const RATE_LIMIT = 3000; // 3 seconds
+  let lastSubmissionTime = 0;
+
+  const MAX_MESSAGE_LENGTH = 1000;
 
   // Handle message send
   async function handleSubmit() {
+    const now = Date.now();
+    if (now - lastSubmissionTime < RATE_LIMIT) {
+        addChatBubble("Please wait a moment before sending another message.", true);
+        return;
+    }
+    lastSubmissionTime = now;
+
     const userInput = typedPrompt.value.trim();
     if (!userInput) {
-      alert("Please type something!");
-      return;
+        return;
     }
 
-    addChatBubble(userInput, false);
+    if (userInput.length > MAX_MESSAGE_LENGTH) {
+        addChatBubble(`Message too long. Maximum ${MAX_MESSAGE_LENGTH} characters allowed.`, true);
+        return;
+    }
 
-    const response = await fetchData();
-    addChatBubble(response.message || "Error: No message received", true);
-
+    // Store the input before clearing
+    const messageToSend = userInput;
+    
+    // Clear textarea immediately
     typedPrompt.value = '';
-    typedPrompt.style.height = '50px';
+    typedPrompt.style.height = CONFIG.DEFAULT_TEXTAREA_HEIGHT;
+    checkTextareaEmpty(); // Check after clearing
     typedPrompt.focus();
+
+    // Add user message to chat
+    addChatBubble(messageToSend, false);
+
+    // Get and add bot response
+    const response = await fetchData(messageToSend);
+    addChatBubble(response.message || "Error: No message received", true);
   }
 
   // Submit button click
   submit.addEventListener("click", handleSubmit);
 
-  // Enter key submit
+  // Add this function to detect mobile devices
+  const isMobileDevice = () => {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  };
+
+  // Modify the Enter key event listener
   typedPrompt.addEventListener("keydown", (event) => {
-    if (event.key === "Enter" && !event.shiftKey) {
-      event.preventDefault();
-      handleSubmit();
+    if (event.key === "Enter") {
+        const isEmpty = !typedPrompt.value.trim();
+        
+        if (isEmpty) {
+            // Prevent default behavior (new line) when textarea is empty
+            event.preventDefault();
+            return;
+        }
+
+        if (isMobileDevice()) {
+            // On mobile, Enter creates a new line only if there's text
+            return true;
+        } else {
+            // On desktop, Enter submits the form if there's text
+            if (!event.shiftKey && !isProcessing) {
+                event.preventDefault();
+                handleSubmit();
+            }
+        }
     }
   });
 
@@ -185,4 +259,12 @@ document.addEventListener("DOMContentLoaded", () => {
       behavior: 'smooth'
     });
   });
+
+  // Add focus event listener to textarea
+  typedPrompt.addEventListener('focus', () => {
+    checkTextareaEmpty();
+  });
+
+  // Call checkTextareaEmpty on page load
+  checkTextareaEmpty(); // Initial check
 });

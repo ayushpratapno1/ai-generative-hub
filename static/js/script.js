@@ -81,11 +81,21 @@ document.addEventListener("DOMContentLoaded", () => {
     return addChatBubble("", true, true);
   };
 
+  // Add this function to handle button state
+  const toggleSubmitButton = (disabled) => {
+    submit.disabled = disabled;
+    submit.style.opacity = disabled ? '0.6' : '1';
+    submit.style.cursor = disabled ? 'not-allowed' : 'pointer';
+  };
+
   const fetchData = async () => {
     const data = new FormData();
     data.append('prompt', typedPrompt.value);
     data.append('csrfmiddlewaretoken', csrfmiddlewaretoken);
     const typingBubble = showTypingIndicator();
+    
+    // Disable submit button
+    toggleSubmitButton(true);
 
     try {
       const response = await fetch("/api", {
@@ -109,6 +119,9 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (error) {
       console.error("Fetch error:", error);
       return { message: "Error: Unable to fetch response" };
+    } finally {
+      // Re-enable submit button
+      toggleSubmitButton(false);
     }
   };
 

@@ -158,21 +158,23 @@
   max-width: 800px;
   margin: auto;
   padding: 20px;
-  height: calc(100vh - 78px - 72px); /* Adjust to leave space for the navbar and input container */
-  overflow-y: auto; /* Enable scrolling if messages overflow */
+  height: calc(100vh - 78px - 72px);
+  overflow-y: auto;
   background-color: #ffffff;
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  margin-top: 76px; /* Offset for the navbar */
-  box-sizing: border-box; /* Include padding and borders in height calculations */
+  gap: 5px;
+  margin-top: 76px;
+  box-sizing: border-box;
+  padding-bottom: 60px;
 }
 
 /* Chat Container on Small Screens */
 @media (max-width: 576px) {
   .chat-container {
-    max-width: 100%;
-    padding: 20px;
+    padding: 12px;
+    padding-bottom: 55px;
+    margin-top: 60px;
   }
 }
 
@@ -243,8 +245,8 @@ body {
 
 
 .chat-bubble {
-  padding: 12px 18px;
-  margin: 12px 0;
+  padding: 8px 12px;
+  margin: 8px 0;
   border-radius: 20px;
   position: relative;
   font-size: 1rem;
@@ -318,65 +320,69 @@ textarea::placeholder {
 /* Input container styling */
 .input-container {
   display: flex;
-  align-items: flex-end; /* Align items to the bottom of the container */
-  justify-content: space-between; /* Ensure even spacing */
+  align-items: flex-end;
+  justify-content: space-between;
   max-width: 800px;
-  margin: 20px auto 0; /* Add top margin and remove bottom margin */
+  margin: 0 auto;
   border-radius: 10px;
-  gap: 10px; /* Space between textarea and button */
-  position: fixed; /* Keep the input container fixed at the bottom */
-  bottom: 0; /* Position it at the bottom of the screen */
+  gap: 10px;
+  position: fixed;
+  bottom: 0;
   left: 0;
   right: 0;
-  padding: 10px; /* Add padding for spacing */
-  z-index: 1000; /* Ensure it stays on top of other elements */
+  padding: 6px 8px;
+  z-index: 1000;
+  background-color: #ffffff;
+}
+
+/* Dark mode for input container */
+.dark-mode .input-container {
+  background-color: #2b2b2b;
 }
 
 /* Textarea styling */
 .input-container textarea.expanding-textarea {
-  flex-grow: 1; /* Allow textarea to expand naturally */
-  resize: none; /* Disable manual resizing */
-  background-color: #e5e5e5; /* Subtle grey background */
-  border-radius: 20px; /* Smooth edges */
-  box-shadow: inset 0px 2px 4px rgba(0, 0, 0, 0.1); /* Subtle inset shadow */
-  font-size: 1rem; /* Readable font size */
-  padding: 12px 15px; /* Add padding inside textarea */
-  outline: none; /* Remove blue outline on focus */
-  min-height: 50px; /* Minimum height */
-  max-height: 100px; /* Limit maximum height */
-  box-sizing: border-box; /* Include padding/border in dimensions */
-  width: calc(100% - 80px); /* Leave space for the button */
-  overflow-y: auto; /* Add scrollbar if content exceeds height */
+  flex-grow: 1;
+  resize: none;
+  background-color: #e5e5e5;
+  border-radius: 20px;
+  box-shadow: inset 0px 2px 4px rgba(0, 0, 0, 0.1);
+  font-size: 1rem;
+  padding: 12px 15px;
+  outline: none;
+  min-height: 50px;
+  max-height: 100px;
+  box-sizing: border-box;
+  width: calc(100% - 80px);
+  overflow-y: auto;
   transition: height 0.3s ease;
+  border: none;
+  line-height: 1.4; /* Add line height for better text spacing */
 }
 
 /* Dark mode adjustments for textarea */
 .dark-mode .input-container textarea {
   background-color: rgb(56, 54, 54);
-  border: 1px rgb(56, 54, 54);
   color: #f5fffa;
+  border: none;
 }
 
-.dark-mode .input-container textarea:focus {
-  box-shadow: white;
-  border-color: rgb(255, 255, 255);
-}
-
-/* Textarea focus effect */
-.input-container textarea:focus {
-  border-color: rgb(210, 210, 210);
-}
 
 /* Submit button styling */
 .input-container button {
-  flex-shrink: 0; /* Prevent shrinking */
-  background-color: #000; /* Dark background */
-  color: #fff; /* White text */
-  border: none; /* Remove border */
-  border-radius: 20px; /* Match textarea styling */
-  padding: 13px 20px; /* Add padding */
-  cursor: pointer; /* Show pointer on hover */
+  flex-shrink: 0;
+  background-color: #000;
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  padding: 12px 20px; /* Adjusted padding */
+  cursor: pointer;
   transition: background-color 0.3s ease;
+  height: 50px; /* Fixed height */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
 }
 
 /* Dark mode adjustments for button */
@@ -396,21 +402,43 @@ textarea::placeholder {
 
 /* Responsive adjustments for small screens */
 @media (max-width: 576px) {
+  .chat-container {
+    padding: 12px;
+    padding-bottom: 55px;
+    margin-top: 60px;
+  }
+
+  .chat-bubble {
+    max-width: 90%;
+    padding: 6px 10px;
+    margin: 3px 0;
+    font-size: 0.95rem;
+  }
+
   .input-container {
-    max-width: 100%;
-    padding: 8px; /* Adjust padding for smaller screens */
-  }
-
-  .input-container textarea.expanding-textarea {
-    font-size: 0.9rem; /* Slightly smaller font size */
-    padding: 12px; /* Adjust padding for consistency */
-  }
-
-  .input-container button {
-    padding: 12px 15px; /* Adjust button size */
+    padding: 5px 6px;
   }
 }
 
+/* Additional mobile optimizations */
+@media (max-width: 400px) {
+  .chat-container {
+    padding: 8px;
+    padding-bottom: 20px;
+    padding-top: 60px;
+  }
+
+  .chat-bubble {
+    max-width: 95%;
+    padding: 5px 8px;
+    margin: 2px 0;
+    font-size: 0.9rem;
+  }
+
+  .input-container {
+    padding: 4px 5px;
+  }
+}
 
 /* Typing indicator styling */
 .typing-indicator {

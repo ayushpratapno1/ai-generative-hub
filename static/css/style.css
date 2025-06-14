@@ -424,7 +424,7 @@ textarea::placeholder {
 @media (max-width: 400px) {
   .chat-container {
     padding: 8px;
-    padding-bottom: 20px;
+    padding-bottom: 40px;
     padding-top: 60px;
   }
 

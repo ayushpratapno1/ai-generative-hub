@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="en">
 {% load static %}
@@ -124,8 +123,7 @@
         <div id="sidebar" class="sidebar">
             <div id="child">
                 <a href="/">Home</a>
-                <a href="/chat">My Chat-bot</a>
-            
+                <a href="/chat">ChatBot</a>
             </div>
         </div>
     </div>
@@ -142,9 +140,11 @@
             <div id="bot-message" class="bot-message chat-bubble">
                 <strong>Julie:</strong> Hi! Enter your prompt to generate an image.
                 <span class="timestamp">12:00 PM</span>
-
             </div>
         </div>
+
+        <!-- Add this new button -->
+        <div class="scroll-to-bottom" id="scrollToBottom" title="Scroll to bottom"></div>
 
         <!-- Input and Submit Button -->
         <div style="width: 100%;" class="input-container mt-3">

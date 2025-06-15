@@ -5,6 +5,69 @@ const CONFIG = {
     TYPING_ANIMATION_DURATION: '1.5s'
 };
 
+// Add this at the top with other constants
+const PLACEHOLDER_MESSAGES = {
+    greetings: [
+        "👋 Hi! How can I help you today?",
+        "🌟 Welcome! What's on your mind?",
+        "✨ Hello! I'm here to assist you!",
+        "💫 Hey there! Let's chat!",
+        "🎯 Hi! What would you like to know?"
+    ],
+    questions: [
+        "🤔 Ask me anything!",
+        "💭 What's your question?",
+        "❓ Curious about something?",
+        "🔍 Looking for information?",
+        "💡 Need some insights?"
+    ],
+    suggestions: [
+        "📝 Try asking about...",
+        "🎨 Tell me more about...",
+        "🎨 Let's explore...",
+        "🚀 Want to learn about...",
+        "🎯 Interested in..."
+    ],
+    fun: [
+        "🎮 Ready for a chat!",
+        "🎲 Let's have a conversation!",
+        "🎪 Ask me something fun!",
+        "🎭 I'm all ears!",
+        "🎪 What's your story?"
+    ]
+};
+
+// Add this at the top of your script.js file, after the CONFIG object
+const COOL_NAMES = {
+    adjectives: [
+        'Cosmic', 'Quantum', 'Nebula', 'Stellar', 'Galactic', 'Astral', 'Celestial', 
+        'Mystic', 'Ethereal', 'Cosmic', 'Digital', 'Cyber', 'Neon', 'Crystal', 'Shadow',
+        'Phantom', 'Echo', 'Frost', 'Blaze', 'Storm', 'Thunder', 'Vortex', 'Zen'
+    ],
+    nouns: [
+        'Voyager', 'Explorer', 'Pioneer', 'Nomad', 'Wanderer', 'Sage', 'Mage',
+        'Knight', 'Phoenix', 'Dragon', 'Wolf', 'Hawk', 'Eagle', 'Tiger', 'Lion',
+        'Ninja', 'Samurai', 'Warrior', 'Guardian', 'Sentinel', 'Warden', 'Ranger'
+    ]
+};
+
+// Function to generate a random cool name
+function generateCoolName() {
+    const randomAdjective = COOL_NAMES.adjectives[Math.floor(Math.random() * COOL_NAMES.adjectives.length)];
+    const randomNoun = COOL_NAMES.nouns[Math.floor(Math.random() * COOL_NAMES.nouns.length)];
+    return `${randomAdjective}${randomNoun}`;
+}
+
+// Function to get or create user name
+function getUserName() {
+    let userName = localStorage.getItem('userName');
+    if (!userName) {
+        userName = generateCoolName();
+        localStorage.setItem('userName', userName);
+    }
+    return userName;
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const chatContainer = document.querySelector("#chat-container");
   const typedPrompt = document.querySelector("#typedPrompt");
@@ -70,7 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const timestamp = formatTimestamp();
     const typingHTML = `<em>Julie is typing<span class="dots"></span></em>`;
     const messageHTML = `
-      <strong>${isBot ? "Julie" : "Ayush"}:</strong> ${isBot ? renderCode(text) : escapeHTML(text)}
+      <strong>${isBot ? "Julie" : getUserName()}:</strong> ${isBot ? renderCode(text) : escapeHTML(text)}
       <span class="timestamp">${timestamp}</span>
     `;
 
@@ -267,4 +330,128 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Call checkTextareaEmpty on page load
   checkTextareaEmpty(); // Initial check
+
+  const textarea = document.getElementById("typedPrompt");
+  let typingInterval = null;
+  let isTypingActive = false;
+  const TYPING_SPEED = 50;  // Consistent typing speed in milliseconds
+  const DELETING_SPEED = 30;  // Consistent deleting speed in milliseconds
+  const PAUSE_BEFORE_DELETE = 2000;  // Pause before starting to delete
+  const PAUSE_BEFORE_NEXT = 1000;  // Pause before starting next message
+
+  // Function to get a random message
+  function getRandomMessage() {
+      const categories = Object.keys(PLACEHOLDER_MESSAGES);
+      const randomCategory = categories[Math.floor(Math.random() * categories.length)];
+      const messages = PLACEHOLDER_MESSAGES[randomCategory];
+      return messages[Math.floor(Math.random() * messages.length)];
+  }
+
+  // Function to start the typing effect
+  function startTypingEffect() {
+      if (typingInterval || isTypingActive) return;
+      
+      let currentMessage = getRandomMessage();
+      let currentIndex = 0;
+      let isDeleting = false;
+      
+      isTypingActive = true;
+      
+      function type() {
+          if (!isTypingActive) return;
+          
+          if (isDeleting) {
+              textarea.placeholder = currentMessage.substring(0, currentIndex - 1);
+              currentIndex--;
+              
+              if (currentIndex === 0) {
+                  isDeleting = false;
+                  currentMessage = getRandomMessage();
+                  clearInterval(typingInterval);
+                  typingInterval = null;
+                  
+                  setTimeout(() => {
+                      if (isTypingActive) {
+                          typingInterval = setInterval(type, TYPING_SPEED);
+                      }
+                  }, PAUSE_BEFORE_NEXT);
+              }
+          } else {
+              textarea.placeholder = currentMessage.substring(0, currentIndex + 1);
+              currentIndex++;
+              
+              if (currentIndex === currentMessage.length) {
+                  isDeleting = true;
+                  clearInterval(typingInterval);
+                  typingInterval = null;
+                  
+                  setTimeout(() => {
+                      if (isTypingActive) {
+                          typingInterval = setInterval(type, DELETING_SPEED);
+                      }
+                  }, PAUSE_BEFORE_DELETE);
+              }
+          }
+      }
+      
+      // Clear any existing interval before starting
+      if (typingInterval) {
+          clearInterval(typingInterval);
+          typingInterval = null;
+      }
+      
+      typingInterval = setInterval(type, TYPING_SPEED);
+  }
+
+  // Function to stop the typing effect
+  function stopTypingEffect() {
+      isTypingActive = false;
+      if (typingInterval) {
+          clearInterval(typingInterval);
+          typingInterval = null;
+      }
+      textarea.placeholder = "";
+  }
+
+  // Function to reset the typing effect
+  function resetTypingEffect() {
+      stopTypingEffect();
+      if (!textarea.value) {
+          setTimeout(startTypingEffect, 500);
+      }
+  }
+
+  // Start the effect when page loads
+  startTypingEffect();
+
+  // Event listeners for user interaction
+  const stopEvents = ['focus', 'click', 'keydown', 'input', 'touchstart'];
+  stopEvents.forEach(event => {
+      textarea.addEventListener(event, () => {
+          stopTypingEffect();
+      });
+  });
+
+  // Handle blur event
+  textarea.addEventListener('blur', () => {
+      if (!textarea.value) {
+          resetTypingEffect();
+      }
+  });
+
+  // Handle input changes
+  textarea.addEventListener('input', () => {
+      if (!textarea.value) {
+          resetTypingEffect();
+      }
+  });
+
+  // Handle page visibility changes
+  document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+          stopTypingEffect();
+      } else if (!textarea.value) {
+          resetTypingEffect();
+      }
+  });
 });

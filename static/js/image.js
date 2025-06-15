@@ -1,3 +1,10 @@
+// Add configuration constants at the top
+const CONFIG = {
+    SCROLL_THRESHOLD: 100,
+    DEFAULT_TEXTAREA_HEIGHT: '50px',
+    TYPING_ANIMATION_DURATION: '1.5s'
+};
+
 document.addEventListener("DOMContentLoaded", () => {
   const toggleSwitch = document.getElementById("toggle-theme");
   const emoji = document.getElementById("emoji");
@@ -8,6 +15,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const sidebarToggle = document.getElementById('sidebar-toggle');
   const sidebar = document.getElementById('sidebar');
   const mainContent = document.querySelector('.main-content');
+
+  // Add a flag to track API processing state
+  let isProcessing = false;
 
   // Initialize theme based on localStorage
   if (localStorage.getItem("theme") === "dark") {
@@ -25,7 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
       localStorage.setItem("theme", "dark");
     } else {
       document.body.classList.remove("dark-mode");
-      emoji.textContent = "🌞"; // Change to sun emoji
+      emoji.textContent = "🌞";
       localStorage.setItem("theme", "light");
     }
   });
@@ -50,6 +60,27 @@ document.addEventListener("DOMContentLoaded", () => {
     return text.replace(codeBlockPattern, (match) => `<pre><code>${match.slice(3, -3)}</code></pre>`);
   };
 
+  // Add scroll to bottom functionality
+  const scrollToBottomBtn = document.getElementById('scrollToBottom');
+  
+  // Add scroll event listener to show/hide the button
+  chatContainer.addEventListener('scroll', () => {
+      // Show button when user scrolls up (not at bottom)
+      if (chatContainer.scrollHeight - chatContainer.scrollTop > chatContainer.clientHeight + 100) {
+          scrollToBottomBtn.style.display = 'flex';
+      } else {
+          scrollToBottomBtn.style.display = 'none';
+      }
+  });
+
+  // Add click event listener to scroll to bottom
+  scrollToBottomBtn.addEventListener('click', () => {
+      chatContainer.scrollTo({
+          top: chatContainer.scrollHeight,
+          behavior: 'smooth'
+      });
+  });
+
   // Helper function to add chat bubbles
   const addChatBubble = (text, isBot = false, isTyping = false) => {
     const bubble = document.createElement("div");
@@ -62,7 +93,12 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
     bubble.innerHTML = isTyping ? typingHTML : messageHTML;
     chatContainer.appendChild(bubble);
-    chatContainer.scrollTop = chatContainer.scrollHeight;
+    
+    // Smooth scroll to bottom when new message is added
+    chatContainer.scrollTo({
+        top: chatContainer.scrollHeight,
+        behavior: 'smooth'
+    });
 
     if (isTyping) {
       const dotsElement = bubble.querySelector(".dots");
@@ -79,6 +115,33 @@ document.addEventListener("DOMContentLoaded", () => {
   // Display typing indicator for Julie
   const showTypingIndicator = () => addChatBubble("", true, true);
 
+  // Add function to toggle submit button state
+  const toggleSubmitButton = (disabled) => {
+    isProcessing = disabled;
+    submitButton.disabled = disabled;
+    submitButton.style.opacity = disabled ? '0.6' : '1';
+    submitButton.style.cursor = disabled ? 'not-allowed' : 'pointer';
+    submitButton.textContent = disabled ? 'Generating...' : 'Generate';
+    
+    // Also disable the textarea when processing
+    typedPrompt.disabled = disabled;
+    typedPrompt.style.opacity = disabled ? '0.6' : '1';
+    typedPrompt.style.cursor = disabled ? 'not-allowed' : 'text';
+  };
+
+  // Add function to check if textarea is empty
+  const checkTextareaEmpty = () => {
+    const isEmpty = !typedPrompt.value.trim();
+    submitButton.disabled = isEmpty;
+    submitButton.style.opacity = isEmpty ? '0.6' : '1';
+    submitButton.style.cursor = isEmpty ? 'not-allowed' : 'pointer';
+    return isEmpty;
+  };
+
+  // Add rate limiting
+  const RATE_LIMIT = 3000; // 3 seconds
+  let lastSubmissionTime = 0;
+
   // Handle form submission to fetch data
   const fetchData = async () => {
     const data = new FormData();
@@ -87,7 +150,8 @@ document.addEventListener("DOMContentLoaded", () => {
     data.append('api', apiChoice);
     data.append('csrfmiddlewaretoken', csrfmiddlewaretoken);
 
-    const typingBubble = showTypingIndicator();  // Show typing indicator
+    const typingBubble = showTypingIndicator();
+    toggleSubmitButton(true); // Disable submit button and textarea while processing
 
     try {
         const response = await fetch(imageGenerationUrl, {
@@ -99,18 +163,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (!response.ok) {
             console.error("Server responded with an error:", response.statusText);
-            typingBubble.remove();  // Ensure typing bubble is removed
+            typingBubble.remove();
             return { message: "Error: Unable to get response" };
         }
 
-        // Check if the response is a JSON or an image (Blob)
         const contentType = response.headers.get('Content-Type');
         if (contentType && contentType.includes('image/')) {
-            // Handle the response as an image (Blob)
             const imageBlob = await response.blob();
-            const imageUrl = URL.createObjectURL(imageBlob); // Create an object URL for the image
-
-            typingBubble.remove();  // Remove typing bubble after image is ready
+            const imageUrl = URL.createObjectURL(imageBlob);
+            typingBubble.remove();
 
             return {
                 message: `
@@ -121,9 +182,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 `
             };
         } else {
-            // If the response is JSON (used for logs or error messages)
             const jsonResponse = await response.json();
-            typingBubble.remove();  // Remove typing bubble after receiving the response
+            typingBubble.remove();
 
             if (jsonResponse.status === "success") {
                 return {
@@ -138,42 +198,95 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     } catch (error) {
         console.error("Fetch error:", error);
-        typingBubble.remove();  // Remove typing bubble in case of error
+        typingBubble.remove();
         return { message: "Error: Unable to fetch response" };
+    } finally {
+        toggleSubmitButton(false); // Re-enable submit button and textarea
+        checkTextareaEmpty();
     }
-};
-
-
+  };
 
   // Handle submit button click
   submitButton.addEventListener("click", async (event) => {
     event.preventDefault();
-    const userInput = typedPrompt.value.trim();
-    if (!userInput) {
-      alert("Please type something!");
-      return;
+    
+    if (isProcessing) {
+        return; // Prevent submission if already processing
     }
 
-    addChatBubble(userInput, false); // Add user's message
-    const response = await fetchData();
-    addChatBubble(response.message || "Error: No message received", true); // Add bot's response
+    const now = Date.now();
+    if (now - lastSubmissionTime < RATE_LIMIT) {
+        addChatBubble("Please wait a moment before generating another image.", true);
+        return;
+    }
+    lastSubmissionTime = now;
 
-    // Clear the textarea and reset its height to original size
-    typedPrompt.value = "";  // Clear input field
-    typedPrompt.style.height = 'auto'; // Reset the height to the default
-    typedPrompt.focus(); // Focus back on input
+    const userInput = typedPrompt.value.trim();
+    if (!userInput) {
+        return;
+    }
+
+    // Store the input before clearing
+    const messageToSend = userInput;
+    
+    // Clear textarea immediately
+    typedPrompt.value = "";
+    typedPrompt.style.height = CONFIG.DEFAULT_TEXTAREA_HEIGHT;
+    checkTextareaEmpty();
+    typedPrompt.focus();
+
+    // Add user message to chat
+    addChatBubble(messageToSend, false);
+    
+    // Get and add bot response
+    const response = await fetchData();
+    addChatBubble(response.message || "Error: No message received", true);
   });
 
-  // Handle textarea auto-resizing
+  // Also add form submission handler to ensure clearing works with form submit
+  document.getElementById('imageForm').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    submitButton.click(); // Trigger the same handler as the button click
+  });
+
+  // Add mobile device detection
+  const isMobileDevice = () => {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  };
+
+  // Handle Enter key press
+  typedPrompt.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+        const isEmpty = !typedPrompt.value.trim();
+        
+        if (isEmpty || isProcessing) {
+            event.preventDefault();
+            return;
+        }
+
+        if (isMobileDevice()) {
+            return true; // Allow new line on mobile
+        } else {
+            if (!event.shiftKey) {
+                event.preventDefault();
+                submitButton.click();
+            }
+        }
+    }
+  });
+
+  // Handle textarea auto-resizing and empty check
   const autoResize = () => {
-    const initialHeight = 50; // Initial height of the textarea
-      typedPrompt.style.height = 'auto'; // Reset height to allow shrink
-      const newHeight = typedPrompt.scrollHeight; // Get new height
-      typedPrompt.style.height = newHeight + 'px'; // Set height based on scrollHeight
-    
-      // Adjust the margin-top to simulate upward movement
-      typedPrompt.style.marginTop = `${initialHeight - newHeight}px`;
+    const initialHeight = 50;
+    typedPrompt.style.height = 'auto';
+    const newHeight = typedPrompt.scrollHeight;
+    typedPrompt.style.height = newHeight + 'px';
+    typedPrompt.style.marginTop = `${initialHeight - newHeight}px`;
+    checkTextareaEmpty(); // Check emptiness on input
   };
 
   typedPrompt.addEventListener('input', autoResize);
+  
+  // Initial check for empty textarea
+  checkTextareaEmpty();
 });

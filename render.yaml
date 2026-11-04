@@ -38,30 +38,4 @@ services:
   # Git branch: beta
   # Database: Separate Neon beta branch
   # ==========================================
-  - type: web
-    name: ai-generative-hub-beta
-    runtime: python
-    plan: free
-    branch: beta
-    buildCommand: bash build.sh
-    startCommand: python -m gunicorn chatbot.wsgi:application
-    healthCheckPath: /
-
-    envVars:
-      - key: PYTHON_VERSION
-        value: "3.14.7"
-
-      - key: SECRET_KEY
-        generateValue: true
-
-      - key: DEBUG
-        value: "False"
-
-      - key: PRODUCTION
-        value: "True"
-
-      - key: ALLOWED_HOSTS
-        fromService:
-          name: ai-generative-hub-beta
-          type: web
-          envVarKey: RENDER_EXTERNAL_HOSTNAME
+  

@@ -2,6 +2,7 @@ import os
 from google import genai
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
+from django.contrib.auth.decorators import login_required
 import logging
 import markdown2
 from google.genai import types
@@ -12,9 +13,11 @@ logger = logging.getLogger(__name__)
 def home(request):
     return render(request, "index.html")
 
+@login_required
 def chat(request):
     return render(request, "chat.html")
 
+@login_required
 def chatAPI(request):
     if request.method == "POST":
         prompt = request.POST.get("prompt", "")

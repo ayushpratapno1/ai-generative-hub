@@ -376,9 +376,18 @@ body {
   box-shadow: none !important;
 }
 
+:root,
+[data-theme="light"] {
+  --input-placeholder: rgba(0, 0, 0, 0.45);
+}
+
+[data-theme="dark"] {
+  --input-placeholder: rgba(199, 199, 199, 0.72);
+}
+
 .input-container textarea::placeholder {
-  color: var(--muted);
-  opacity: 0.75;
+  color: var(--input-placeholder);
+  opacity: 1;
 }
 
 /* Circular Send Button */

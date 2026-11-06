@@ -169,7 +169,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Modify the input event listener to check emptiness and auto-expand
   typedPrompt.addEventListener('input', () => {
-    if (!typedPrompt.value.trim()) {
+    if (!typedPrompt.value) {
       typedPrompt.style.height = '';
     } else {
       typedPrompt.style.height = 'auto';

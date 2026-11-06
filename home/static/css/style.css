@@ -305,15 +305,15 @@ body {
 .input-container {
   display: flex;
   align-items: flex-end;
-  max-width: 800px;
+  max-width: 650px;
   margin: 0 auto;
-  border-radius: 50px;
+  border-radius: 24px;
   gap: 10px;
   position: fixed;
   bottom: 15px;
   left: 16px;
   right: 16px;
-  padding: 6px 8px 6px 18px;
+  padding: 6px 10px 6px 18px;
   z-index: 1000;
   background-color: var(--surface-alt);
   border: 1.5px solid var(--border);
@@ -337,9 +337,10 @@ body {
 .input-container textarea.expanding-textarea,
 .input-container textarea {
   flex: 1;
+  min-width: 0;
   min-height: 40px;
-  max-height: 150px;
-  padding: 9px 0;
+  max-height: 200px;
+  padding: 9px 4px 9px 0;
   margin: 0;
   font-size: 0.95rem;
   line-height: 1.45;
@@ -351,12 +352,35 @@ body {
   box-shadow: none !important;
   color: var(--text);
   resize: none;
+  overflow-x: hidden;
   overflow-y: auto;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
   box-sizing: border-box;
   will-change: transform, opacity;
   backface-visibility: hidden;
   transform: translateZ(0);
   transition: color 0.3s ease;
+}
+
+/* Clean, thin scrollbar for multiline code inside textarea */
+.input-container textarea.expanding-textarea::-webkit-scrollbar {
+  display: block;
+  width: 4px;
+}
+
+.input-container textarea.expanding-textarea::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.input-container textarea.expanding-textarea::-webkit-scrollbar-thumb {
+  background-color: var(--border);
+  border-radius: 4px;
+}
+
+.input-container textarea.expanding-textarea::-webkit-scrollbar-thumb:hover {
+  background-color: var(--muted);
 }
 
 /* Eliminate any hover, focus, border, outline, blur, or glow on textarea */
@@ -623,16 +647,22 @@ code {
     bottom: 12px;
     left: 8px;
     right: 8px;
-    padding: 5px 6px 5px 14px;
+    padding: 5px 8px 5px 14px;
     gap: 8px;
-    border-radius: 50px;
+    border-radius: 22px;
   }
 
   .input-container textarea.expanding-textarea {
+    min-width: 0;
     min-height: 38px;
-    padding: 8px 0;
+    padding: 8px 2px 8px 0;
     font-size: 0.92rem;
-    max-height: 120px;
+    max-height: 140px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
     border: none !important;
     outline: none !important;
     box-shadow: none !important;
@@ -670,14 +700,20 @@ code {
     right: 6px;
     padding: 4px 6px 4px 12px;
     gap: 6px;
-    border-radius: 50px;
+    border-radius: 20px;
   }
 
   .input-container textarea.expanding-textarea {
+    min-width: 0;
     min-height: 36px;
-    padding: 7px 0;
+    padding: 7px 2px 7px 0;
     font-size: 0.9rem;
-    max-height: 100px;
+    max-height: 120px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
     border: none !important;
     outline: none !important;
     box-shadow: none !important;

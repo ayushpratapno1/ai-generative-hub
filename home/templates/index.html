@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 {% load static %}
@@ -10,17 +9,18 @@
 
     <!-- ★ THEME FLASH PREVENTION — must run before any render -->
     <script>
-      (function() {
-        var saved = localStorage.getItem('theme');
-        var theme = (saved === 'dark' || saved === 'light')
-          ? saved
-          : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-        document.documentElement.setAttribute('data-theme', theme);
-      })();
+        (function () {
+            var saved = localStorage.getItem('theme');
+            var theme = (saved === 'dark' || saved === 'light')
+                ? saved
+                : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
     </script>
 
     <link rel="apple-touch-icon" sizes="180x180" href="{% static 'apple-touch-icon.png' %}">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
 
     <!-- Favicon Links -->
     <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon-32x32.png' %}">
@@ -138,9 +138,9 @@
             top: 0;
             z-index: 1000;
             transition: background-color 0.3s ease, color 0.3s ease,
-                        border-color 0.3s ease;
+                border-color 0.3s ease;
         }
-    
+
         header h1 {
             font-size: 2rem;
             margin: 0;
@@ -148,12 +148,12 @@
             text-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
             transition: color 0.5s ease;
         }
-    
+
         header p {
             font-size: 1rem;
             margin: 0.5rem 0 0;
         }
-    
+
         .container {
             max-width: 1200px;
             margin: 2rem auto;
@@ -163,30 +163,31 @@
             justify-content: center;
             gap: 2rem;
         }
-    
-        #text, #image {
+
+        #text,
+        #image {
             flex: 1 1 100%;
             padding: 1.5rem;
             border-radius: 15px;
             text-align: center;
             max-width: 400px;
             transition: background-color 0.3s ease, color 0.3s ease,
-                        box-shadow 0.3s ease;
+                box-shadow 0.3s ease;
         }
-    
+
         .h2 {
             font-size: 1.8rem;
             margin-bottom: 1rem;
             text-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
             transition: color 0.3s ease;
         }
-    
+
         .p {
             font-size: 1rem;
             line-height: 1.8;
             margin: 0.5rem 0;
         }
-    
+
         .index-btn {
             display: inline-block;
             margin-top: 1rem;
@@ -195,66 +196,67 @@
             border-radius: 25px;
             font-size: 1rem;
             transition: background 0.3s ease, transform 0.3s ease,
-                        box-shadow 0.3s ease;
+                box-shadow 0.3s ease;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
         }
-    
+
         .index-btn:hover {
             transform: translateY(-3px);
         }
-    
+
         footer {
             text-align: center;
             padding: 1rem;
             margin-top: 2rem;
             transition: background-color 0.3s ease, color 0.3s ease;
         }
-    
+
         /* Animations */
         .animated-text {
             font-size: 1rem;
             animation: shimmer 3s infinite;
         }
-    
+
         @keyframes shimmer {
             0% {
                 background-position: -200%;
             }
-    
+
             100% {
                 background-position: 200%;
             }
         }
-    
+
         /* Media Queries for Small Screens */
         @media (max-width: 768px) {
             header h1 {
                 font-size: 1.5rem;
             }
-    
+
             header p {
                 font-size: 0.9rem;
             }
-    
-            #text, #image {
+
+            #text,
+            #image {
                 padding: 1rem;
             }
-    
+
             .h2 {
                 font-size: 1.5rem;
             }
-    
+
             .index-btn {
                 padding: 0.5rem 1rem;
                 font-size: 0.9rem;
             }
         }
-    
+
         @media (max-width: 480px) {
             header h1 {
                 font-size: 1.2rem;
             }
-    
+
             .h2 {
                 font-size: 1.2rem;
             }
@@ -264,6 +266,7 @@
         .index-header {
             position: relative;
         }
+
         .index-header .theme-toggle-wrapper {
             position: absolute;
             top: 50%;
@@ -272,7 +275,7 @@
             margin: 0;
         }
     </style>
-    
+
 </head>
 
 <body>
@@ -282,30 +285,23 @@
 
         <!-- ★ PREMIUM THEME TOGGLE — round icon button -->
         <div class="theme-toggle-wrapper">
-          <button
-            id="theme-toggle"
-            class="theme-toggle"
-            type="button"
-            role="switch"
-            aria-checked="false"
-            aria-label="Switch to dark mode"
-          >
-            <span class="theme-toggle__icon" aria-hidden="true">
-              <!-- Sun SVG -->
-              <svg class="theme-toggle__sun" viewBox="0 0 24 24" fill="none"
-                   stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-                <circle cx="12" cy="12" r="4.2"/>
-                <path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2
-                         M5.2 5.2l1.6 1.6M17.2 17.2l1.6 1.6M18.8 5.2l-1.6 1.6M6.8 17.2l-1.6 1.6"/>
-              </svg>
-              <!-- Moon SVG -->
-              <svg class="theme-toggle__moon" viewBox="0 0 24 24" fill="none"
-                   stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
-                   stroke-linejoin="round">
-                <path d="M20.5 14.8A8.8 8.8 0 0 1 9.2 3.5a8.8 8.8 0 1 0 11.3 11.3Z"/>
-              </svg>
-            </span>
-          </button>
+            <button id="theme-toggle" class="theme-toggle" type="button" role="switch" aria-checked="false"
+                aria-label="Switch to dark mode">
+                <span class="theme-toggle__icon" aria-hidden="true">
+                    <!-- Sun SVG -->
+                    <svg class="theme-toggle__sun" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="1.8" stroke-linecap="round">
+                        <circle cx="12" cy="12" r="4.2" />
+                        <path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2
+                         M5.2 5.2l1.6 1.6M17.2 17.2l1.6 1.6M18.8 5.2l-1.6 1.6M6.8 17.2l-1.6 1.6" />
+                    </svg>
+                    <!-- Moon SVG -->
+                    <svg class="theme-toggle__moon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20.5 14.8A8.8 8.8 0 0 1 9.2 3.5a8.8 8.8 0 1 0 11.3 11.3Z" />
+                    </svg>
+                </span>
+            </button>
         </div>
     </header>
     <main class="container">
@@ -327,7 +323,7 @@
         </div>
     </main>
     <footer>
-        <p>&copy; 2024 AI Generative Hub. Crafted for the Future.</p>
+        <p>&copy; 2026 AI Generative Hub. Crafted for the Future.</p>
     </footer>
 
     <script src="{% static 'js/theme.js' %}"></script>

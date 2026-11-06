@@ -373,66 +373,124 @@ body {
   border-color: var(--accent);
 }
 
-/* Submit button */
-.input-container button {
+/* Circular Send Button */
+.send-btn {
+  bottom: 3px;
+  appearance: none;
+  -webkit-appearance: none;
   flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 50%;
   background-color: var(--accent);
   color: #ffffff;
-  border: none;
-  border-radius: 20px;
-  padding: 12px 24px;
   cursor: pointer;
-  height: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1rem;
-  font-weight: 600;
   position: relative;
   overflow: hidden;
+  outline: none;
   box-shadow: 0 2px 6px var(--shadow);
   transition: background-color 0.25s ease,
     transform 0.15s ease,
-    box-shadow 0.25s ease;
+    box-shadow 0.25s ease,
+    opacity 0.25s ease,
+    border-color 0.25s ease;
 }
 
-.input-container button:hover {
+.send-btn:hover:not(:disabled) {
   background-color: var(--accent-hover);
   box-shadow: 0 4px 12px var(--shadow-lg);
   transform: translateY(-1px);
 }
 
-.input-container button:active {
-  transform: scale(0.96);
+.send-btn:active:not(:disabled) {
+  transform: scale(0.92);
 }
 
-.input-container button::after {
-  content: '';
+.send-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.send-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+/* Icon container */
+.send-btn__icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
+}
+
+/* Arrow SVG */
+.send-btn__arrow {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 5px;
-  height: 5px;
-  background: rgba(255, 255, 255, 0.5);
+  width: 100%;
+  height: 100%;
+  color: #ffffff;
+  opacity: 1;
+  transform: scale(1) translateY(0);
+  transition: opacity 0.3s ease,
+    transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Spinner SVG */
+.send-btn__spinner {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  color: #ffffff;
   opacity: 0;
-  border-radius: 100%;
-  transform: scale(1, 1) translate(-50%);
-  transform-origin: 50% 50%;
+  transform: scale(0.4);
+  pointer-events: none;
+  transition: opacity 0.25s ease,
+    transform 0.25s ease;
 }
 
-.input-container button:active::after {
-  animation: ripple 0.6s ease-out;
+/* Loading state: arrow flies up & fades, spinner pops in & spins */
+.send-btn.is-loading .send-btn__arrow {
+  opacity: 0;
+  transform: scale(0.3) translateY(-8px);
 }
 
-@keyframes ripple {
-  0% {
-    transform: scale(0, 0);
-    opacity: 0.5;
+.send-btn.is-loading .send-btn__spinner {
+  opacity: 1;
+  transform: scale(1);
+  animation: sendSpin 0.8s linear infinite;
+}
+
+@keyframes sendSpin {
+  from {
+    transform: rotate(0deg);
   }
 
-  100% {
-    transform: scale(20, 20);
-    opacity: 0;
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 400px) {
+  .send-btn {
+    width: 42px;
+    height: 41px;
+    bottom: 5px;
+  }
+
+  .send-btn__icon {
+    width: 18px;
+    height: 18px;
   }
 }
 

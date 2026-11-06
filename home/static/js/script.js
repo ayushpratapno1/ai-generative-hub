@@ -144,10 +144,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const toggleSubmitButton = (disabled) => {
     isProcessing = disabled;
     submit.disabled = disabled;
-    submit.style.opacity = disabled ? '0.6' : '1';
-    submit.style.cursor = disabled ? 'not-allowed' : 'pointer';
-    // Add loading text
-    submit.textContent = disabled ? 'Processing...' : 'Submit';
+    if (disabled) {
+      submit.classList.add('is-loading');
+      submit.setAttribute('aria-label', 'Processing message...');
+    } else {
+      submit.classList.remove('is-loading');
+      submit.setAttribute('aria-label', 'Send message');
+    }
   };
 
   const fetchData = async (message) => {
@@ -191,9 +194,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // Add this function to check if textarea is empty
   const checkTextareaEmpty = () => {
     const isEmpty = !typedPrompt.value.trim();
-    submit.disabled = isEmpty;
-    submit.style.opacity = isEmpty ? '0.6' : '1';
-    submit.style.cursor = isEmpty ? 'not-allowed' : 'pointer';
+    if (!isProcessing) {
+      submit.disabled = isEmpty;
+    }
     return isEmpty;
   };
 

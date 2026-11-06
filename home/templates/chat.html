@@ -104,9 +104,10 @@
       <div class="scroll-to-bottom" id="scrollToBottom" title="Scroll to bottom"></div>
 
       <!-- Input and Submit Button -->
-      <div class="input-container" style="bottom: 15px;">
-        <textarea style="top: 1.5px;" class="form-control expanding-textarea" rows="1" placeholder="" id="typedPrompt"
-          required></textarea>
+      <div class="input-container">
+        <label for="typedPrompt" class="visually-hidden">Type your message</label>
+        <textarea class="expanding-textarea" rows="1" placeholder="" id="typedPrompt"
+          aria-label="Type your message" required></textarea>
         {% csrf_token %}
         <button type="button" id="submit" class="send-btn" aria-label="Send message">
           <span class="send-btn__icon" aria-hidden="true">

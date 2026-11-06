@@ -1,7 +1,6 @@
 // At the top of the file, add configuration constants
 const CONFIG = {
     SCROLL_THRESHOLD: 100,
-    DEFAULT_TEXTAREA_HEIGHT: '50px',
     TYPING_ANIMATION_DURATION: '1.5s'
 };
 
@@ -200,10 +199,14 @@ document.addEventListener("DOMContentLoaded", () => {
     return isEmpty;
   };
 
-  // Modify the input event listener to check emptiness
+  // Modify the input event listener to check emptiness and auto-expand
   typedPrompt.addEventListener('input', () => {
-    typedPrompt.style.height = 'auto';
-    typedPrompt.style.height = typedPrompt.scrollHeight + 'px';
+    if (!typedPrompt.value.trim()) {
+      typedPrompt.style.height = '';
+    } else {
+      typedPrompt.style.height = 'auto';
+      typedPrompt.style.height = typedPrompt.scrollHeight + 'px';
+    }
     checkTextareaEmpty(); // Check on every input
   });
 
@@ -234,11 +237,15 @@ document.addEventListener("DOMContentLoaded", () => {
     // Store the input before clearing
     const messageToSend = userInput;
     
-    // Clear textarea immediately
+    // Clear textarea immediately and reset inline height so CSS controls dimensions
     typedPrompt.value = '';
-    typedPrompt.style.height = CONFIG.DEFAULT_TEXTAREA_HEIGHT;
+    typedPrompt.style.height = '';
     checkTextareaEmpty(); // Check after clearing
-    typedPrompt.focus();
+    
+    // Avoid jarring viewport jumps/virtual keyboard popups on mobile devices
+    if (!isMobileDevice()) {
+      typedPrompt.focus({ preventScroll: true });
+    }
 
     // Add user message to chat
     addChatBubble(messageToSend, false);
@@ -251,9 +258,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // Submit button click
   submit.addEventListener("click", handleSubmit);
 
-  // Add this function to detect mobile devices
+  // Add this function to detect mobile devices or compact mobile viewports
   const isMobileDevice = () => {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 576;
   };
 
   // Modify the Enter key event listener

@@ -73,29 +73,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const typedPrompt = document.querySelector("#typedPrompt");
   const submit = document.querySelector("#submit");
   const csrfmiddlewaretoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-  const toggleSwitch = document.getElementById("toggle-theme");
-  const emoji = document.getElementById("emoji");
   const scrollToBottomBtn = document.getElementById('scrollToBottom');
 
-  // Theme setup
-  if (localStorage.getItem("theme") === "dark") {
-    document.body.classList.add("dark-mode");
-    toggleSwitch.checked = true;
-  } else {
-    document.body.classList.remove("dark-mode");
-    toggleSwitch.checked = false;
-  }
-
-  toggleSwitch.addEventListener("change", () => {
-    if (toggleSwitch.checked) {
-      document.body.classList.add("dark-mode");
-      localStorage.setItem("theme", "dark");
-    } else {
-      document.body.classList.remove("dark-mode");
-      emoji.textContent = "🌞";
-      localStorage.setItem("theme", "light");
-    }
-  });
+  // Theme is now managed by theme.js — no toggle logic here
 
   const escapeHTML = (str) => {
     return str

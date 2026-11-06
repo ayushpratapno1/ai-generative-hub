@@ -7,6 +7,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Generative Hub</title>
+
+    <!-- ★ THEME FLASH PREVENTION — must run before any render -->
+    <script>
+      (function() {
+        var saved = localStorage.getItem('theme');
+        var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', theme);
+      })();
+    </script>
+
     <link rel="apple-touch-icon" sizes="180x180" href="{% static 'apple-touch-icon.png' %}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
 
@@ -14,32 +24,127 @@
     <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon-32x32.png' %}">
     <link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicon-16x16.png' %}">
 
+    <!-- Theme system CSS -->
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+
     <style>
         /* General Styles */
         body {
             margin: 0;
             padding: 0;
             font-family: 'Arial', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* ---- Light theme (default) ---- */
+        [data-theme="light"] body,
+        :root body {
+            background: linear-gradient(135deg, #e8ecf1, #d1d8e0);
+            color: #1a1a2e;
+        }
+
+        [data-theme="light"] header,
+        :root header {
+            background: rgba(255, 255, 255, 0.9);
+            color: #1a1a2e;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        [data-theme="light"] #text,
+        [data-theme="light"] #image {
+            background: rgba(255, 255, 255, 0.7);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            color: #1a1a2e;
+        }
+
+        [data-theme="light"] footer {
+            background: rgba(255, 255, 255, 0.9);
+            color: #555770;
+            border-top: 1px solid var(--border);
+        }
+
+        [data-theme="light"] .animated-text {
+            background: linear-gradient(90deg, #3b82f6, #06b6d4);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        [data-theme="light"] .h2 {
+            color: #3b82f6;
+        }
+
+        [data-theme="light"] .index-btn {
+            background: linear-gradient(90deg, #3b82f6, #06b6d4);
+            color: #fff;
+        }
+
+        [data-theme="light"] .index-btn:hover {
+            background: linear-gradient(90deg, #06b6d4, #3b82f6);
+        }
+
+        /* ---- Dark theme ---- */
+        [data-theme="dark"] body {
             background: linear-gradient(135deg, #1f1c2c, #928dab);
             color: #f3f3f3;
-            overflow-x: hidden; /* Prevent horizontal scrolling */
         }
-    
+
+        [data-theme="dark"] header {
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+        }
+
+        [data-theme="dark"] #text,
+        [data-theme="dark"] #image {
+            background: rgba(0, 0, 0, 0.6);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            color: #f3f3f3;
+        }
+
+        [data-theme="dark"] footer {
+            background: rgba(0, 0, 0, 0.8);
+            color: #f3f3f3;
+        }
+
+        [data-theme="dark"] .animated-text {
+            background: linear-gradient(90deg, #00e6e6, #8dffcd);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        [data-theme="dark"] .h2 {
+            color: aqua;
+        }
+
+        [data-theme="dark"] .index-btn {
+            background: linear-gradient(90deg, #00e6e6, #8dffcd);
+            color: #333;
+        }
+
+        [data-theme="dark"] .index-btn:hover {
+            background: linear-gradient(90deg, #8dffcd, #00e6e6);
+        }
+
+        /* ---- Layout (theme-independent) ---- */
         header {
             text-align: center;
             padding: 1rem 1rem;
-            background: rgba(0, 0, 0, 0.8);
-            color: #fff;
             position: sticky;
             top: 0;
             z-index: 1000;
+            transition: background-color 0.3s ease, color 0.3s ease,
+                        border-color 0.3s ease;
         }
     
         header h1 {
-            font-size: 2rem; /* Reduced for better fit on small screens */
+            font-size: 2rem;
             margin: 0;
             letter-spacing: 2px;
-            text-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+            text-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+            transition: color 0.5s ease;
         }
     
         header p {
@@ -52,26 +157,26 @@
             margin: 2rem auto;
             padding: 1rem;
             display: flex;
-            flex-wrap: wrap; /* Allow wrapping on small screens */
-            justify-content: center; /* Center items on smaller screens */
+            flex-wrap: wrap;
+            justify-content: center;
             gap: 2rem;
         }
     
         #text, #image {
-            flex: 1 1 100%; /* Default to full width */
-            background: rgba(0, 0, 0, 0.6);
+            flex: 1 1 100%;
             padding: 1.5rem;
             border-radius: 15px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
             text-align: center;
-            max-width: 400px; /* Limit maximum width for better scaling */
+            max-width: 400px;
+            transition: background-color 0.3s ease, color 0.3s ease,
+                        box-shadow 0.3s ease;
         }
     
         .h2 {
             font-size: 1.8rem;
             margin-bottom: 1rem;
-            color: aqua;
-            text-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+            text-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+            transition: color 0.3s ease;
         }
     
         .p {
@@ -80,39 +185,32 @@
             margin: 0.5rem 0;
         }
     
-        .btn {
+        .index-btn {
             display: inline-block;
             margin-top: 1rem;
             padding: 0.6rem 1.5rem;
-            background: linear-gradient(90deg, #00e6e6, #8dffcd);
-            color: #333;
             text-decoration: none;
             border-radius: 25px;
             font-size: 1rem;
-            transition: 0.3s ease;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            transition: background 0.3s ease, transform 0.3s ease,
+                        box-shadow 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
         }
     
-        .btn:hover {
-            background: linear-gradient(90deg, #8dffcd, #00e6e6);
+        .index-btn:hover {
             transform: translateY(-3px);
         }
     
         footer {
             text-align: center;
             padding: 1rem;
-            background: rgba(0, 0, 0, 0.8);
-            color: #f3f3f3;
             margin-top: 2rem;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
     
         /* Animations */
         .animated-text {
             font-size: 1rem;
-            background: linear-gradient(90deg, #00e6e6, #8dffcd);
-            background-clip: text;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
             animation: shimmer 3s infinite;
         }
     
@@ -144,7 +242,7 @@
                 font-size: 1.5rem;
             }
     
-            .btn {
+            .index-btn {
                 padding: 0.5rem 1rem;
                 font-size: 0.9rem;
             }
@@ -159,14 +257,54 @@
                 font-size: 1.2rem;
             }
         }
+
+        /* Position toggle in the header for this page */
+        .index-header {
+            position: relative;
+        }
+        .index-header .theme-toggle-wrapper {
+            position: absolute;
+            top: 50%;
+            right: 1rem;
+            transform: translateY(-50%);
+            margin: 0;
+        }
     </style>
     
 </head>
 
 <body>
-    <header>
-        <h1>AI Generative Hub</h1>
+    <header class="index-header">
+        <h1 class="site-logo">AI Generative Hub</h1>
         <p class="animated-text">Discover the Future of AI-Powered Creativity</p>
+
+        <!-- ★ PREMIUM THEME TOGGLE — round icon button -->
+        <div class="theme-toggle-wrapper">
+          <button
+            id="theme-toggle"
+            class="theme-toggle"
+            type="button"
+            role="switch"
+            aria-checked="false"
+            aria-label="Switch to dark mode"
+          >
+            <span class="theme-toggle__icon" aria-hidden="true">
+              <!-- Sun SVG -->
+              <svg class="theme-toggle__sun" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                <circle cx="12" cy="12" r="4.2"/>
+                <path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2
+                         M5.2 5.2l1.6 1.6M17.2 17.2l1.6 1.6M18.8 5.2l-1.6 1.6M6.8 17.2l-1.6 1.6"/>
+              </svg>
+              <!-- Moon SVG -->
+              <svg class="theme-toggle__moon" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                   stroke-linejoin="round">
+                <path d="M20.5 14.8A8.8 8.8 0 0 1 9.2 3.5a8.8 8.8 0 1 0 11.3 11.3Z"/>
+              </svg>
+            </span>
+          </button>
+        </div>
     </header>
     <main class="container">
         <!-- Text-to-Text Section (Left) -->
@@ -183,12 +321,14 @@
                 making it perfect for chatbots, content creators, or anyone seeking an efficient way to manage textual
                 data.
             </p>
-            <a href="/chat" class="btn">Explore Text-to-Text</a>
+            <a href="/chat" class="index-btn">Explore Text-to-Text</a>
         </div>
     </main>
     <footer>
         <p>&copy; 2024 AI Generative Hub. Crafted for the Future.</p>
     </footer>
+
+    <script src="{% static 'js/theme.js' %}"></script>
 </body>
 
 </html>

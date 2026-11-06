@@ -1,0 +1,374 @@
+/* ==========================================================================
+   PREMIUM THEME SYSTEM — Round icon button, circular reveal, logo animation
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. CSS CUSTOM PROPERTIES
+   -------------------------------------------------------------------------- */
+:root,
+[data-theme="light"] {
+  --bg:          #f6f7fb;
+  --bg-alt:      #eef0f4;
+  --surface:     #ffffff;
+  --surface-alt: #f0f2f5;
+  --text:        #101828;
+  --text-secondary: #555770;
+  --muted:       #667085;
+  --accent:      #4f46e5;
+  --accent-hover:#4338ca;
+  --border:      #e4e7ec;
+  --shadow:      rgba(0, 0, 0, 0.06);
+  --shadow-lg:   rgba(0, 0, 0, 0.10);
+
+  /* Toggle button */
+  --toggle-bg:       #ffffff;
+  --toggle-border:   #e4e7ec;
+  --toggle-hover-bg: #f0f2f5;
+  --toggle-icon:     #344054;
+  --toggle-shadow:   0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+
+  /* Logo */
+  --logo-color:  #101828;
+
+  /* Navbar */
+  --navbar-bg:   #1d1f21;
+  --navbar-text: #ffffff;
+}
+
+[data-theme="dark"] {
+  --bg:          #0b0f17;
+  --bg-alt:      #111827;
+  --surface:     #121826;
+  --surface-alt: #1e293b;
+  --text:        #e6e9f0;
+  --text-secondary: #94a3b8;
+  --muted:       #98a2b3;
+  --accent:      #818cf8;
+  --accent-hover:#6366f1;
+  --border:      #232b3b;
+  --shadow:      rgba(0, 0, 0, 0.25);
+  --shadow-lg:   rgba(0, 0, 0, 0.4);
+
+  /* Toggle button */
+  --toggle-bg:       #1e293b;
+  --toggle-border:   #334155;
+  --toggle-hover-bg: #273548;
+  --toggle-icon:     #e2e8f0;
+  --toggle-shadow:   0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
+
+  /* Logo */
+  --logo-color:  #e6e9f0;
+
+  /* Navbar */
+  --navbar-bg:   #0b0f17;
+  --navbar-text: #e6e9f0;
+}
+
+/* --------------------------------------------------------------------------
+   2. SELECTIVE TRANSITIONS (not blanket *)
+   -------------------------------------------------------------------------- */
+body,
+.chat-container,
+.input-container,
+.input-container textarea,
+.input-container button,
+.chat-bubble,
+.bot-message,
+#sidebar,
+#sidebar a,
+.navbar-custom,
+pre code {
+  transition: background-color 0.3s ease,
+              color 0.3s ease,
+              border-color 0.3s ease,
+              box-shadow 0.3s ease;
+}
+
+/* Apply theme variables to base elements */
+body {
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+/* --------------------------------------------------------------------------
+   2b. DARK THEME OVERRIDES FOR CHAT PAGE ELEMENTS
+   -------------------------------------------------------------------------- */
+[data-theme="dark"] body,
+[data-theme="dark"] .chat-container {
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+[data-theme="dark"] .input-container {
+  background-color: var(--bg);
+}
+
+[data-theme="dark"] .input-container textarea {
+  background-color: var(--surface-alt);
+  color: var(--text);
+}
+
+[data-theme="dark"] .input-container textarea::placeholder {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .bot-message {
+  background-color: var(--surface-alt);
+  color: var(--text);
+}
+
+[data-theme="dark"] .timestamp {
+  color: var(--muted);
+}
+
+[data-theme="dark"] #sidebar {
+  background: var(--surface);
+}
+
+[data-theme="dark"] #sidebar a {
+  color: var(--text);
+}
+
+[data-theme="dark"] #sidebar a:hover {
+  background-color: var(--surface-alt);
+}
+
+[data-theme="dark"] #sidebar-toggle {
+  color: var(--text);
+}
+
+[data-theme="dark"] .input-container button {
+  background-color: var(--accent);
+  color: var(--bg);
+}
+
+[data-theme="dark"] .input-container button:hover {
+  background-color: var(--accent-hover);
+  box-shadow: 0px 4px 8px var(--shadow);
+}
+
+[data-theme="dark"] pre code {
+  background-color: var(--surface-alt);
+  color: #a5d6ff;
+  border: 1px solid var(--border);
+}
+
+[data-theme="dark"] code {
+  background-color: var(--surface-alt);
+  color: #7ee787;
+}
+
+[data-theme="dark"] .scroll-to-bottom {
+  background-color: var(--accent);
+}
+
+[data-theme="dark"] .scroll-to-bottom:hover {
+  background-color: var(--accent-hover);
+}
+
+/* --------------------------------------------------------------------------
+   3. THEME TOGGLE — ROUND ICON BUTTON
+   -------------------------------------------------------------------------- */
+
+/* Wrapper — positions the button; override per-page as needed */
+.theme-toggle-wrapper {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  z-index: 1001;
+}
+
+@media (max-width: 576px) {
+  .theme-toggle-wrapper {
+    top: 68px;
+    right: 12px;
+  }
+}
+
+/* The round button */
+.theme-toggle {
+  appearance: none;
+  -webkit-appearance: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 1px solid var(--toggle-border);
+  border-radius: 50%;
+  background-color: var(--toggle-bg);
+  box-shadow: var(--toggle-shadow);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  outline: none;
+  transition: background-color 0.25s ease,
+              border-color 0.25s ease,
+              box-shadow 0.25s ease,
+              transform 0.15s ease;
+}
+
+/* Hover — lift + brighten */
+.theme-toggle:hover {
+  background-color: var(--toggle-hover-bg);
+  box-shadow: 0 2px 8px var(--shadow-lg);
+  transform: translateY(-1px);
+}
+
+/* Active / press — scale down */
+.theme-toggle:active {
+  transform: scale(0.92);
+}
+
+/* Focus ring — accessible in both themes */
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+@media (max-width: 400px) {
+  .theme-toggle-wrapper {
+    top: 80px;
+    right: 8px;
+  }
+  .theme-toggle {
+    width: 38px;
+    height: 38px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   4. SVG SUN / MOON ICON ANIMATION
+   -------------------------------------------------------------------------- */
+
+/* Container that holds both overlapping SVGs */
+.theme-toggle__icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  pointer-events: none;
+}
+
+@media (max-width: 400px) {
+  .theme-toggle__icon {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* Shared SVG sizing */
+.theme-toggle__sun,
+.theme-toggle__moon {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  color: var(--toggle-icon);
+  transition: opacity 0.4s ease,
+              transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+              color 0.3s ease;
+}
+
+/* ---- Light mode state ---- */
+/* Sun: visible, resting */
+.theme-toggle__sun {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+
+/* Moon: hidden, rotated away */
+.theme-toggle__moon {
+  opacity: 0;
+  transform: rotate(80deg) scale(0.4);
+}
+
+/* ---- Dark mode state ---- */
+/* Sun: hidden, rotated away */
+[data-theme="dark"] .theme-toggle__sun {
+  opacity: 0;
+  transform: rotate(-80deg) scale(0.4);
+}
+
+/* Moon: visible, resting */
+[data-theme="dark"] .theme-toggle__moon {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+
+/* Hover micro-animations */
+.theme-toggle:hover .theme-toggle__sun {
+  transform: rotate(12deg) scale(1.05);
+}
+[data-theme="dark"] .theme-toggle:hover .theme-toggle__sun {
+  transform: rotate(-80deg) scale(0.4);
+}
+
+[data-theme="dark"] .theme-toggle:hover .theme-toggle__moon {
+  transform: rotate(-6deg) scale(1.05);
+}
+
+/* --------------------------------------------------------------------------
+   5. ANIMATED LOGO
+   -------------------------------------------------------------------------- */
+.site-logo {
+  transition: color 0.5s ease,
+              fill 0.5s ease,
+              filter 0.5s ease,
+              transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform-origin: center center;
+}
+
+/* Logo animation class — applied briefly during theme switch */
+.site-logo--animating {
+  animation: logoPulse 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes logoPulse {
+  0%   { transform: scale(1) rotate(0deg);    filter: brightness(1);    }
+  30%  { transform: scale(0.93) rotate(-2deg); filter: brightness(0.88); }
+  60%  { transform: scale(1.04) rotate(1deg);  filter: brightness(1.1);  }
+  100% { transform: scale(1) rotate(0deg);    filter: brightness(1);    }
+}
+
+/* Logo color follows theme */
+.navbar-custom .navbar-brand.site-logo {
+  color: var(--navbar-text);
+}
+
+/* --------------------------------------------------------------------------
+   6. CIRCULAR REVEAL — VIEW TRANSITIONS API
+   Disable the default crossfade so only our clip-path circle plays.
+   The actual animation is driven by document.documentElement.animate()
+   in theme.js — no @keyframes needed here.
+   -------------------------------------------------------------------------- */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+/* --------------------------------------------------------------------------
+   7. REDUCED MOTION — RESPECT USER PREFERENCE
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  /* Kill the circular reveal (JS also checks, but belt-and-suspenders) */
+  ::view-transition-new(root),
+  ::view-transition-old(root) {
+    animation: none !important;
+  }
+
+  /* Kill the logo pulse */
+  .site-logo--animating {
+    animation: none !important;
+  }
+
+  /* Shorten icon transitions to near-instant */
+  .theme-toggle__sun,
+  .theme-toggle__moon,
+  .site-logo {
+    transition-duration: 0.01s !important;
+  }
+}

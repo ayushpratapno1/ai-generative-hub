@@ -1,256 +1,423 @@
 /**
- * code-blocks.js — Modern ChatGPT & Gemini-Style Code Block Experience
- * Namespace: chat-code-* (Clean, decoupled, collision-free)
- * 
- * Capabilities:
- * - Wraps `<pre><code>` in a modern dark container with a sticky header.
- * - Extracts programming language name or auto-detects via highlight.js.
- * - Provides an independent Copy button with clipboard API + legacy fallback.
- * - Enforces fixed-height scrollable window with custom slim scrollbars.
- * - Debounces rapid clicks and clears previous reset timers.
- * - Idempotent: completely safe to call multiple times without duplicating DOM elements.
- * - Supports dynamically rendered or streamed chat bubbles.
+ * code-blocks.js — ChatGPT/Gemini-style code block experience
+ * Namespace: .chat-code-*
+ *
+ * Features:
+ * - Language label and copy button
+ * - Highlight.js syntax highlighting with language fallback
+ * - Independent scrolling handled by code-blocks.css
+ * - Idempotent enhancement
+ * - Supports AJAX and dynamically inserted content
+ * - Reuses MutationObservers
+ * - Clipboard API with fallback
  */
 
 (function () {
   'use strict';
 
-  // SVG Icons
   const COPY_ICON_SVG = `
-    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none"
+         stroke="currentColor" stroke-width="2" stroke-linecap="round"
+         stroke-linejoin="round" aria-hidden="true" focusable="false">
       <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
       <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
     </svg>
   `.trim();
 
   const CHECK_ICON_SVG = `
-    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none"
+         stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+         stroke-linejoin="round" aria-hidden="true" focusable="false">
       <polyline points="20 6 9 17 4 12"></polyline>
     </svg>
   `.trim();
 
+  const observers = new WeakMap();
+  const COPY_FEEDBACK_MS = 1800;
+
+  function getHighlightJs() {
+    return window.hljs &&
+      typeof window.hljs.getLanguage === 'function'
+      ? window.hljs
+      : null;
+  }
+
   /**
-   * Helper: extract language from code element classes
+   * Extract language from code element classes.
    */
   function extractLanguage(codeEl) {
     if (!codeEl) return '';
-    const classList = (codeEl.className || '').split(/\s+/);
-    for (const cls of classList) {
-      if (cls.startsWith('language-')) {
-        return cls.replace('language-', '').trim();
+
+    const classes = Array.from(codeEl.classList || []);
+
+    for (const className of classes) {
+      const match = className.match(/^(?:language|lang)-(.+)$/i);
+      if (match) return match[1].trim().toLowerCase();
+    }
+
+    const hljs = getHighlightJs();
+
+    if (hljs) {
+      for (const className of classes) {
+        if (
+          className &&
+          className !== 'hljs' &&
+          hljs.getLanguage(className)
+        ) {
+          return className.toLowerCase();
+        }
       }
     }
-    for (const cls of classList) {
-      if (cls && cls !== 'hljs') {
-        return cls.trim();
-      }
-    }
+
     return '';
   }
 
+  function setButtonContent(button, iconMarkup, label) {
+    button.innerHTML = `${iconMarkup}<span>${label}</span>`;
+  }
+
+  function clearFeedbackTimer(button) {
+    if (button._chatCodeFeedbackTimer) {
+      window.clearTimeout(button._chatCodeFeedbackTimer);
+      button._chatCodeFeedbackTimer = null;
+    }
+  }
+
   /**
-   * Fallback clipboard copy using a temporary off-screen textarea
+   * Display copy success or failure feedback.
    */
-  function fallbackCopyText(text, onSuccess, onError) {
+  function showCopyState(button, state) {
+    clearFeedbackTimer(button);
+
+    button.classList.remove('copied', 'failed');
+
+    if (state === 'copied') {
+      button.classList.add('copied');
+      setButtonContent(button, CHECK_ICON_SVG, 'Copied!');
+    } else if (state === 'failed') {
+      button.classList.add('failed');
+      setButtonContent(button, COPY_ICON_SVG, 'Failed');
+    } else {
+      setButtonContent(button, COPY_ICON_SVG, 'Copy');
+      return;
+    }
+
+    button._chatCodeFeedbackTimer = window.setTimeout(function () {
+      button.classList.remove('copied', 'failed');
+      setButtonContent(button, COPY_ICON_SVG, 'Copy');
+      button._chatCodeFeedbackTimer = null;
+    }, COPY_FEEDBACK_MS);
+  }
+
+  /**
+   * Legacy clipboard fallback.
+   */
+  function fallbackCopyText(text) {
     const textarea = document.createElement('textarea');
+
     textarea.value = text;
     textarea.setAttribute('readonly', '');
+    textarea.setAttribute('aria-hidden', 'true');
+
     textarea.style.position = 'fixed';
-    textarea.style.top = '-9999px';
+    textarea.style.top = '0';
     textarea.style.left = '-9999px';
+    textarea.style.width = '1px';
+    textarea.style.height = '1px';
     textarea.style.opacity = '0';
+    textarea.style.pointerEvents = 'none';
+
     document.body.appendChild(textarea);
-    textarea.select();
-    textarea.setSelectionRange(0, 99999);
+
+    let copied = false;
 
     try {
-      const successful = document.execCommand('copy');
-      if (successful && typeof onSuccess === 'function') {
-        onSuccess();
-      } else if (!successful && typeof onError === 'function') {
-        onError();
-      }
-    } catch (err) {
-      if (typeof onError === 'function') onError(err);
+      textarea.focus();
+      textarea.select();
+      textarea.setSelectionRange(0, textarea.value.length);
+      copied = document.execCommand('copy');
+    } catch (error) {
+      copied = false;
     } finally {
-      document.body.removeChild(textarea);
+      textarea.remove();
+    }
+
+    return copied;
+  }
+
+  async function writeClipboard(text) {
+    if (
+      navigator.clipboard &&
+      typeof navigator.clipboard.writeText === 'function'
+    ) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch (error) {
+        return fallbackCopyText(text);
+      }
+    }
+
+    return fallbackCopyText(text);
+  }
+
+  /**
+   * Copy code with feedback and duplicate-click protection.
+   */
+  async function handleCopy(codeEl, copyBtn) {
+    if (copyBtn.dataset.copyPending === 'true') return;
+
+    const textToCopy = codeEl.textContent || '';
+
+    if (!textToCopy) {
+      showCopyState(copyBtn, 'failed');
+      return;
+    }
+
+    copyBtn.dataset.copyPending = 'true';
+    copyBtn.disabled = true;
+
+    try {
+      const success = await writeClipboard(textToCopy);
+      showCopyState(copyBtn, success ? 'copied' : 'failed');
+    } catch (error) {
+      showCopyState(copyBtn, 'failed');
+    } finally {
+      copyBtn.dataset.copyPending = 'false';
+      copyBtn.disabled = false;
     }
   }
 
   /**
-   * Copy code to clipboard with visual feedback and debounce protection
+   * Highlight code using Highlight.js.
    */
-  function handleCopy(codeEl, copyBtn) {
-    // Read raw unformatted text content (no HTML tags, preserving linebreaks/tabs)
-    const textToCopy = codeEl.textContent || codeEl.innerText || '';
+  function highlightCode(codeEl, declaredLanguage) {
+    const hljs = getHighlightJs();
 
-    // Clear any pending timeout from previous rapid clicks
-    if (copyBtn._copyTimeout) {
-      clearTimeout(copyBtn._copyTimeout);
-      copyBtn._copyTimeout = null;
+    if (!hljs) return declaredLanguage;
+
+    if (codeEl.dataset.chatCodeHighlighted === 'true') {
+      return declaredLanguage || extractLanguage(codeEl);
     }
 
-    const showSuccess = () => {
-      copyBtn.classList.add('copied');
-      copyBtn.classList.remove('failed');
-      copyBtn.innerHTML = `${CHECK_ICON_SVG}<span>Copied!</span>`;
+    let language = declaredLanguage;
 
-      copyBtn._copyTimeout = setTimeout(() => {
-        copyBtn.classList.remove('copied');
-        copyBtn.innerHTML = `${COPY_ICON_SVG}<span>Copy</span>`;
-        copyBtn._copyTimeout = null;
-      }, 2000);
-    };
+    if (language && hljs.getLanguage(language)) {
+      try {
+        if (!codeEl.classList.contains('hljs')) {
+          hljs.highlightElement(codeEl);
+        }
 
-    const showError = () => {
-      copyBtn.classList.add('failed');
-      copyBtn.classList.remove('copied');
-      copyBtn.innerHTML = `<span>Failed</span>`;
-
-      copyBtn._copyTimeout = setTimeout(() => {
-        copyBtn.classList.remove('failed');
-        copyBtn.innerHTML = `${COPY_ICON_SVG}<span>Copy</span>`;
-        copyBtn._copyTimeout = null;
-      }, 2000);
-    };
-
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(textToCopy).then(showSuccess).catch(() => {
-        fallbackCopyText(textToCopy, showSuccess, showError);
-      });
-    } else {
-      fallbackCopyText(textToCopy, showSuccess, showError);
+        codeEl.dataset.chatCodeHighlighted = 'true';
+        return language;
+      } catch (error) {
+        console.warn('Code highlighting failed:', error);
+      }
     }
+
+    // Auto-detect missing or unsupported languages.
+    try {
+      const source = codeEl.textContent || '';
+      const result = hljs.highlightAuto(source);
+
+      if (result && result.value) {
+        codeEl.innerHTML = result.value;
+        codeEl.classList.add('hljs');
+        codeEl.dataset.chatCodeHighlighted = 'true';
+
+        if (result.language) {
+          language = result.language;
+          codeEl.classList.add(`language-${language}`);
+        }
+      }
+    } catch (error) {
+      console.warn('Automatic language detection failed:', error);
+    }
+
+    return language;
   }
 
   /**
-   * Main initializer: transforms all pre > code blocks within a container
-   * @param {HTMLElement|Document} root - Context element to search within
+   * Create the code-block container and header.
    */
-  function initializeCodeBlocks(root = document) {
+  function createCodeBlock(pre, code) {
+    const container = document.createElement('div');
+    container.className = 'chat-code-block';
+
+    const header = document.createElement('div');
+    header.className = 'chat-code-header';
+
+    const languageLabel = document.createElement('span');
+    languageLabel.className = 'chat-code-language';
+
+    const copyButton = document.createElement('button');
+    copyButton.type = 'button';
+    copyButton.className = 'chat-code-copy-btn';
+    copyButton.setAttribute('aria-label', 'Copy code');
+    copyButton.setAttribute('title', 'Copy code');
+
+    setButtonContent(copyButton, COPY_ICON_SVG, 'Copy');
+
+    const content = document.createElement('div');
+    content.className = 'chat-code-content';
+
+    copyButton.addEventListener('click', function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      handleCopy(code, copyButton);
+    });
+
+    header.appendChild(languageLabel);
+    header.appendChild(copyButton);
+
+    pre.parentNode.insertBefore(container, pre);
+    content.appendChild(pre);
+
+    container.appendChild(header);
+    container.appendChild(content);
+
+    return {
+      container,
+      languageLabel,
+      copyButton
+    };
+  }
+
+  /**
+   * Initialize code blocks inside a container.
+   */
+  function initializeCodeBlocks(root) {
+    root = root || document;
+
     if (!root || typeof root.querySelectorAll !== 'function') return;
 
-    const preElements = root.querySelectorAll('pre');
+    const preElements = [];
 
-    preElements.forEach((pre) => {
-      // 1. Guard against duplicate wrapping (idempotency)
-      if (pre.closest('.chat-code-block') || pre.dataset.codeEnhanced === 'true') {
+    if (
+      root.nodeType === Node.ELEMENT_NODE &&
+      root.matches('pre')
+    ) {
+      preElements.push(root);
+    }
+
+    root.querySelectorAll('pre').forEach(function (pre) {
+      preElements.push(pre);
+    });
+
+    preElements.forEach(function (pre) {
+      if (
+        !pre ||
+        !pre.parentNode ||
+        pre.dataset.codeEnhanced === 'true' ||
+        pre.closest('.chat-code-block')
+      ) {
         return;
       }
 
       const code = pre.querySelector('code');
       if (!code) return;
 
-      // Mark element as enhanced immediately
+      const declaredLanguage = extractLanguage(code);
+      const detectedLanguage = highlightCode(
+        code,
+        declaredLanguage
+      );
+
+      const displayLanguage =
+        (detectedLanguage || 'CODE').toUpperCase();
+
+      const elements = createCodeBlock(pre, code);
+
+      elements.languageLabel.textContent = displayLanguage;
+
+      elements.copyButton.setAttribute(
+        'aria-label',
+        `Copy ${displayLanguage} code`
+      );
+
+      elements.copyButton.setAttribute(
+        'title',
+        `Copy ${displayLanguage} code`
+      );
+
       pre.dataset.codeEnhanced = 'true';
-
-      // 2. Determine language & perform syntax highlighting
-      let detectedLang = extractLanguage(code);
-
-      if (window.hljs) {
-        if (detectedLang && window.hljs.getLanguage(detectedLang)) {
-          // Highlight with known language
-          window.hljs.highlightElement(code);
-        } else {
-          // Auto-detect language if unspecified
-          try {
-            const auto = window.hljs.highlightAuto(code.textContent || '');
-            if (auto && auto.value) {
-              code.innerHTML = auto.value;
-              code.classList.add('hljs');
-              if (auto.language && !detectedLang) {
-                detectedLang = auto.language;
-                code.classList.add(`language-${detectedLang}`);
-              }
-            }
-          } catch (e) {
-            // Fallback: highlightElement without throwing
-            window.hljs.highlightElement(code);
-          }
-        }
-      }
-
-      // 3. Language badge label (uppercase, default to CODE)
-      const displayLang = (detectedLang || 'CODE').toUpperCase();
-
-      // 4. Build ChatGPT/Gemini-style Container
-      const container = document.createElement('div');
-      container.className = 'chat-code-block';
-
-      // Header Bar
-      const header = document.createElement('div');
-      header.className = 'chat-code-header';
-
-      // Language Badge (Left)
-      const langBadge = document.createElement('span');
-      langBadge.className = 'chat-code-language';
-      langBadge.textContent = displayLang;
-
-      // Copy Button (Right)
-      const copyBtn = document.createElement('button');
-      copyBtn.type = 'button';
-      copyBtn.className = 'chat-code-copy-btn';
-      copyBtn.setAttribute('aria-label', `Copy ${displayLang} code`);
-      copyBtn.innerHTML = `${COPY_ICON_SVG}<span>Copy</span>`;
-
-      copyBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        handleCopy(code, copyBtn);
-      });
-
-      header.appendChild(langBadge);
-      header.appendChild(copyBtn);
-
-      // Scrollable Code Content Wrapper (Fixed Max Height)
-      const content = document.createElement('div');
-      content.className = 'chat-code-content';
-
-      // 5. Relocate DOM nodes: insert container before pre, then move pre inside content
-      pre.parentNode.insertBefore(container, pre);
-      content.appendChild(pre);
-      container.appendChild(header);
-      container.appendChild(content);
     });
   }
 
   /**
-   * Optional MutationObserver to automatically enhance code blocks in streaming/appended messages
-   * @param {HTMLElement} chatContainerEl - Chat container element to watch
-   * @returns {MutationObserver|null}
+   * Watch a chat container for dynamically inserted code blocks.
+   * Reuses an existing observer for the same container.
    */
   function observeCodeBlocks(chatContainerEl) {
-    if (!chatContainerEl || !window.MutationObserver) return null;
+    if (
+      !chatContainerEl ||
+      typeof chatContainerEl.querySelectorAll !== 'function' ||
+      typeof window.MutationObserver !== 'function'
+    ) {
+      return null;
+    }
 
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        mutation.addedNodes.forEach((node) => {
-          if (node.nodeType === Node.ELEMENT_NODE) {
-            if (node.matches && node.matches('pre')) {
-              initializeCodeBlocks(node.parentNode || document);
-            } else if (node.querySelectorAll) {
-              const hasPre = node.querySelector('pre');
-              if (hasPre) {
-                initializeCodeBlocks(node);
-              }
-            }
+    const existingObserver = observers.get(chatContainerEl);
+
+    if (existingObserver) {
+      return existingObserver;
+    }
+
+    initializeCodeBlocks(chatContainerEl);
+
+    const observer = new MutationObserver(function (mutations) {
+      mutations.forEach(function (mutation) {
+        mutation.addedNodes.forEach(function (node) {
+          if (node.nodeType !== Node.ELEMENT_NODE) return;
+
+          if (node.matches && node.matches('pre')) {
+            initializeCodeBlocks(node);
+          } else if (node.querySelectorAll) {
+            initializeCodeBlocks(node);
           }
         });
       });
     });
 
-    observer.observe(chatContainerEl, { childList: true, subtree: true });
+    observer.observe(chatContainerEl, {
+      childList: true,
+      subtree: true
+    });
+
+    observers.set(chatContainerEl, observer);
+
     return observer;
   }
 
-  // Export functions to window
+  /**
+   * Stop watching a chat container.
+   */
+  function unobserveCodeBlocks(chatContainerEl) {
+    const observer =
+      chatContainerEl && observers.get(chatContainerEl);
+
+    if (!observer) return;
+
+    observer.disconnect();
+    observers.delete(chatContainerEl);
+  }
+
+  // Preserve existing public function names.
   window.initializeCodeBlocks = initializeCodeBlocks;
   window.observeCodeBlocks = observeCodeBlocks;
+  window.unobserveCodeBlocks = unobserveCodeBlocks;
 
-  // Auto-run on DOM ready for any server-rendered code blocks
+  // Initialize server-rendered code blocks.
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => initializeCodeBlocks());
+    document.addEventListener(
+      'DOMContentLoaded',
+      function () {
+        initializeCodeBlocks(document);
+      },
+      { once: true }
+    );
   } else {
-    initializeCodeBlocks();
+    initializeCodeBlocks(document);
   }
+
 })();

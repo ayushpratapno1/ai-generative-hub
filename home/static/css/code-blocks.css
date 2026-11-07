@@ -170,15 +170,17 @@
   max-height: var(--chat-code-max-height);
 
   overflow: auto !important;
-  overscroll-behavior: contain;
+
+  /* Allow vertical scrolling to pass to the chat container */
+  overscroll-behavior-y: auto;
+
+  /* Keep horizontal scroll contained */
+  overscroll-behavior-x: contain;
+
   -webkit-overflow-scrolling: touch;
 
   background: var(--chat-code-bg);
   box-sizing: border-box;
-
-  scrollbar-width: thin;
-  scrollbar-color:
-    var(--chat-code-scrollbar-thumb) var(--chat-code-scrollbar-track);
 }
 
 /* The pre element grows to the code's natural width.

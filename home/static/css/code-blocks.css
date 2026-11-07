@@ -1,0 +1,229 @@
+/* ==========================================================================
+   CODE-BLOCKS.CSS — Modern ChatGPT & Gemini-Style Code Rendering Engine
+   Namespace: .chat-code-* (Guaranteed collision-free with Bootstrap & app styles)
+   
+   Features:
+   - Configurable fixed-height scrollable window (--chat-code-max-height)
+   - Independent horizontal and vertical scrolling (no chat bubble overflow)
+   - Sticky top header with uppercase language badge & Copy button
+   - Atom One Dark high-contrast palette & custom slim scrollbars
+   - Preserved monospace typography, indentation, and tab-sizes (white-space: pre !important)
+   - Fully responsive for Desktop (380px), Tablet (340px), and Mobile (300px)
+   ========================================================================== */
+
+:root {
+  /* Configurable maximum viewing height for code windows */
+  --chat-code-max-height: 380px;
+
+  /* Atom One Dark inspired palette */
+  --chat-code-bg: #1e1e24;
+  --chat-code-header-bg: #282a36;
+  --chat-code-border: rgba(255, 255, 255, 0.12);
+  --chat-code-text: #abb2bf;
+  --chat-code-header-text: #8b949e;
+  --chat-code-copy-hover: rgba(255, 255, 255, 0.08);
+  --chat-code-copy-success: #98c379;
+  --chat-code-copy-error: #e06c75;
+  --chat-code-scrollbar-track: #21222c;
+  --chat-code-scrollbar-thumb: rgba(255, 255, 255, 0.22);
+  --chat-code-scrollbar-thumb-hover: rgba(255, 255, 255, 0.38);
+  --chat-code-font: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+}
+
+/* Tablet viewport: adjust max height */
+@media (max-width: 768px) {
+  :root {
+    --chat-code-max-height: 340px;
+  }
+}
+
+/* Mobile viewport: adjust max height */
+@media (max-width: 480px) {
+  :root {
+    --chat-code-max-height: 300px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   1. CODE BLOCK CONTAINER
+   -------------------------------------------------------------------------- */
+
+.chat-code-block {
+  display: flex;
+  flex-direction: column;
+  margin: 14px 0;
+  border-radius: 12px;
+  border: 1px solid var(--chat-code-border);
+  background-color: var(--chat-code-bg);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
+  overflow: hidden; /* Clips child content to rounded corners */
+  max-width: 100%;
+  min-width: 0;     /* Critical flex property: prevents horizontal flex blowout */
+  box-sizing: border-box;
+  text-align: left;
+}
+
+/* --------------------------------------------------------------------------
+   2. STICKY CODE HEADER
+   -------------------------------------------------------------------------- */
+
+.chat-code-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+  background-color: var(--chat-code-header-bg);
+  border-bottom: 1px solid var(--chat-code-border);
+  user-select: none;
+  flex-shrink: 0;   /* Never shrinks when code content scrolls */
+  z-index: 2;
+  box-sizing: border-box;
+}
+
+/* Language Badge */
+.chat-code-language {
+  font-family: var(--chat-code-font);
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--chat-code-header-text);
+  text-transform: uppercase;
+  letter-spacing: 0.75px;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Copy Button */
+.chat-code-copy-btn {
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  border: none;
+  color: var(--chat-code-header-text);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
+  outline: none;
+  line-height: 1;
+}
+
+.chat-code-copy-btn:hover {
+  background-color: var(--chat-code-copy-hover);
+  color: #ffffff;
+}
+
+.chat-code-copy-btn:active {
+  transform: scale(0.96);
+}
+
+.chat-code-copy-btn:focus-visible {
+  outline: 2px solid #61afef;
+  outline-offset: 1px;
+}
+
+.chat-code-copy-btn.copied {
+  color: var(--chat-code-copy-success);
+}
+
+.chat-code-copy-btn.failed {
+  color: var(--chat-code-copy-error);
+}
+
+.chat-code-copy-btn svg {
+  flex-shrink: 0;
+  transition: transform 0.15s ease;
+}
+
+/* --------------------------------------------------------------------------
+   3. SCROLLABLE CODE WINDOW (Fixed Maximum Height & Independent Scrolling)
+   -------------------------------------------------------------------------- */
+
+.chat-code-content {
+  position: relative;
+  max-height: var(--chat-code-max-height);
+  overflow-y: auto !important;                  /* Independent vertical scroll */
+  overflow-x: auto !important;                  /* Independent horizontal scroll */
+  overscroll-behavior: contain;                 /* Prevents parent chat scroll chaining */
+  -webkit-overflow-scrolling: touch;            /* Smooth momentum scrolling on iOS */
+  background-color: var(--chat-code-bg);
+  box-sizing: border-box;
+  scrollbar-width: thin !important;             /* Explicitly override global scrollbar-width: none */
+  scrollbar-color: var(--chat-code-scrollbar-thumb) var(--chat-code-scrollbar-track) !important;
+}
+
+/* Reset <pre> inside code content wrapper */
+.chat-code-content pre {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  border-left: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  overflow: visible !important;                 /* Scrolling is handled on .chat-code-content */
+}
+
+/* Code Element Typography & Formatting */
+.chat-code-content pre code.hljs,
+.chat-code-content pre code {
+  display: block;
+  padding: 14px 18px;
+  margin: 0;
+  font-family: var(--chat-code-font);
+  font-size: 0.88rem;
+  line-height: 1.6;
+  white-space: pre !important;                  /* PRESERVE EXACT SPACES, TABS & INDENTATION WITHOUT UNWANTED WRAPS */
+  word-spacing: normal;
+  word-break: normal;
+  word-wrap: normal;
+  tab-size: 4;
+  -moz-tab-size: 4;
+  background-color: transparent !important;
+  color: var(--chat-code-text);
+  box-sizing: border-box;
+  text-align: left;
+}
+
+/* --------------------------------------------------------------------------
+   4. CUSTOM SLIM SCROLLBARS (Explicitly overrides global scrollbar suppression)
+   -------------------------------------------------------------------------- */
+
+.chat-code-content::-webkit-scrollbar {
+  width: 8px !important;
+  height: 8px !important;
+  display: block !important;
+}
+
+.chat-code-content::-webkit-scrollbar-track {
+  background: var(--chat-code-scrollbar-track) !important;
+}
+
+.chat-code-content::-webkit-scrollbar-thumb {
+  background: var(--chat-code-scrollbar-thumb) !important;
+  border-radius: 4px !important;
+}
+
+.chat-code-content::-webkit-scrollbar-thumb:hover {
+  background: var(--chat-code-scrollbar-thumb-hover) !important;
+}
+
+/* --------------------------------------------------------------------------
+   5. INLINE CODE STYLING (Code outside of <pre>)
+   -------------------------------------------------------------------------- */
+
+:not(pre) > code {
+  font-family: var(--chat-code-font);
+  font-size: 0.88em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background-color: rgba(125, 125, 125, 0.15);
+  color: var(--accent, #61afef);
+  border: 1px solid rgba(125, 125, 125, 0.2);
+  word-break: break-word;
+}

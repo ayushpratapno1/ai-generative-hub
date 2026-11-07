@@ -191,6 +191,8 @@ body {
   position: relative;
   font-size: 1rem;
   max-width: 80%;
+  min-width: 0;
+  box-sizing: border-box;
   word-wrap: break-word;
   overflow: hidden;
   transition: background-color 0.3s ease,
@@ -256,6 +258,8 @@ body {
   color: var(--text);
   align-self: flex-start;
   border: 1px solid var(--border);
+  min-width: 0;
+  max-width: 85%;
 }
 
 /* Timestamp */
@@ -523,142 +527,11 @@ body {
 }
 
 /* --------------------------------------------------------------------------
-   6. CODE BLOCKS & SYNTAX HIGHLIGHTING (ChatGPT / Modern LLM UI)
+   6. CODE BLOCKS & SYNTAX (Managed in code-blocks.css)
    -------------------------------------------------------------------------- */
 
-.code-block-container {
-  margin: 12px 0;
-  border-radius: 8px;
-  overflow: hidden;
-  background-color: #282c34;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22);
-  max-width: 100%;
-}
-
-/* Header bar */
-.code-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 6px 14px;
-  background-color: #21252b;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  user-select: none;
-}
-
-/* Language badge */
-.code-lang {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #abb2bf;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
-}
-
-/* Copy button */
-.copy-btn {
-  appearance: none;
-  -webkit-appearance: none;
-  background: transparent;
-  border: none;
-  color: #abb2bf;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  outline: none;
-}
-
-.copy-btn:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
-}
-
-.copy-btn:focus-visible {
-  outline: 1.5px solid var(--accent);
-  outline-offset: 1px;
-}
-
-.copy-btn.copied {
-  color: #98c379;
-}
-
-.copy-btn svg {
-  flex-shrink: 0;
-  transition: transform 0.15s ease;
-}
-
-/* Code Content Area */
-.code-content {
-  position: relative;
-  overflow-x: auto;
-  max-width: 100%;
-}
-
-.code-content pre {
-  margin: 0 !important;
-  padding: 0 !important;
-  border: none !important;
-  background: transparent !important;
-}
-
-.code-content pre code.hljs,
-.code-content pre code {
-  display: block;
-  padding: 14px 16px;
-  margin: 0;
-  font-size: 0.88rem;
-  line-height: 1.55;
-  background-color: #282c34 !important;
-  color: #abb2bf;
-  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
-  overflow-x: auto;
-  white-space: pre;
-  word-break: normal;
-  word-wrap: normal;
-  tab-size: 4;
-}
-
-/* Custom scrollbar for code blocks */
-.code-content::-webkit-scrollbar,
-.code-content pre code::-webkit-scrollbar {
-  height: 6px;
-  display: block;
-}
-
-.code-content::-webkit-scrollbar-track,
-.code-content pre code::-webkit-scrollbar-track {
-  background: #21252b;
-}
-
-.code-content::-webkit-scrollbar-thumb,
-.code-content pre code::-webkit-scrollbar-thumb {
-  background: #4b5263;
-  border-radius: 3px;
-}
-
-.code-content::-webkit-scrollbar-thumb:hover,
-.code-content pre code::-webkit-scrollbar-thumb:hover {
-  background: #5c6370;
-}
-
-/* Inline code (not in pre) */
-:not(pre) > code {
-  color: var(--accent);
-  background-color: var(--surface-alt);
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
-  font-size: 0.88em;
-  border: 1px solid var(--border);
-}
+/* Complete code block rendering, fixed-height scrolling, typography, and
+   inline code styling are encapsulated in code-blocks.css (.chat-code-*). */
 
 /* --------------------------------------------------------------------------
    7. SCROLL-TO-BOTTOM BUTTON

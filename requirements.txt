@@ -4,3 +4,4 @@ gunicorn==26.2.0
 markdown2==2.5.5
 whitenoise==6.12.0
 python-dotenv==1.2.4
+bleach==6.4.0

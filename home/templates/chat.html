@@ -26,8 +26,12 @@
   <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon-32x32.png' %}">
   <link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicon-16x16.png' %}">
 
-  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <!-- Theme system CSS (Defines all CSS custom properties first) -->
   <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+  <!-- Layout and component styles (Consumes theme variables) -->
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <!-- Code blocks styles (ChatGPT / Gemini style isolated namespace) -->
+  <link rel="stylesheet" href="{% static 'css/code-blocks.css' %}">
 
   <!-- Highlight.js — syntax highlighting for code blocks -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/atom-one-dark.min.css"
@@ -91,9 +95,8 @@
     </div>
 
     <!-- Sidebar Toggle Button -->
-    <div id="sidebar-toggle" class="sidebar-toggle">
-      <span id="sidebar-toggle">☰</span>
-
+    <div id="sidebar-toggle" class="sidebar-toggle" role="button" aria-label="Toggle sidebar" tabindex="0">
+      <span class="sidebar-toggle-icon">☰</span>
     </div>
 
     <div class="container mt-4">
@@ -134,6 +137,8 @@
 
   <!-- Highlight.js Library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+  <!-- Modern Code Blocks Enhancement -->
+  <script src="{% static 'js/code-blocks.js' %}"></script>
   <script src="{% static 'js/theme.js' %}"></script>
   <script src="{% static 'js/script.js' %}"></script>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"

@@ -1,14 +1,62 @@
 import os
+import bleach
+import markdown2
 from google import genai
+from google.genai import types
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
 from django.contrib.auth.decorators import login_required
 import logging
-import markdown2
-from google.genai import types
 
 # Add logging
 logger = logging.getLogger(__name__)
+
+# Strict allowlist of safe HTML tags and attributes for LLM markdown rendering
+ALLOWED_HTML_TAGS = list(set(list(bleach.sanitizer.ALLOWED_TAGS) + [
+    'p', 'pre', 'code', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+    'table', 'thead', 'tbody', 'tr', 'th', 'td', 'hr', 'br',
+    'span', 'blockquote', 'strong', 'em', 'b', 'i', 'u', 's', 'strike',
+    'ul', 'ol', 'li', 'a',
+]))
+
+ALLOWED_HTML_ATTRIBUTES = {
+    '*': ['class'],
+    'a': ['href', 'title', 'target', 'rel'],
+}
+
+ALLOWED_URL_PROTOCOLS = ['http', 'https', 'mailto']
+
+def render_markdown_safe(text: str) -> str:
+    """
+    Parses LLM markdown into HTML while guaranteeing full XSS protection.
+    1. markdown2 converts fenced code blocks with language classes (highlightjs-lang).
+    2. bleach sanitizes the HTML against a strict allowlist, stripping arbitrary scripts.
+    """
+    if not text:
+        return ""
+
+    # Parse markdown into HTML
+    html_output = markdown2.markdown(
+        text.strip(),
+        extras=[
+            "fenced-code-blocks",
+            "highlightjs-lang",
+            "code-friendly",
+            "cuddled-lists",
+            "tables",
+        ],
+        safe_mode="escape",
+    )
+
+    # Sanitize tags and attributes against whitelist
+    clean_html = bleach.clean(
+        html_output,
+        tags=ALLOWED_HTML_TAGS,
+        attributes=ALLOWED_HTML_ATTRIBUTES,
+        protocols=ALLOWED_URL_PROTOCOLS,
+        strip=True,
+    )
+    return clean_html
 
 def home(request):
     return render(request, "index.html")
@@ -68,22 +116,9 @@ def chatAPI(request):
             
             request.session["chat_history"] = updated_history
 
-            # 8. Convert to HTML and return
-            #    - Use markdown2 with fenced-code-blocks and highlightjs-lang to generate
-            #      standard <pre><code class="language-[lang]"> blocks compatible with highlight.js.
-            #    - safe_mode="escape" ensures all raw HTML/JS tags are sanitized to prevent XSS.
+            # 8. Convert to HTML and return using render_markdown_safe
             raw_text = response.text.strip() if response.text else ""
-            html_reply = markdown2.markdown(
-                raw_text,
-                extras=[
-                    "fenced-code-blocks",
-                    "highlightjs-lang",
-                    "code-friendly",
-                    "cuddled-lists",
-                    "tables",
-                ],
-                safe_mode="escape",
-            )
+            html_reply = render_markdown_safe(raw_text)
             return JsonResponse({"message": html_reply})
 
         except Exception as e:

@@ -53,124 +53,6 @@ document.addEventListener("DOMContentLoaded", () => {
       .replace(/'/g, "&#039;");
   };
 
-  /* --------------------------------------------------------------------------
-     CODE BLOCK ENHANCER (Language Badge, Highlight.js, Copy to Clipboard)
-     -------------------------------------------------------------------------- */
-  const COPY_ICON_SVG = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`;
-  const CHECK_ICON_SVG = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
-
-  const getCodeLanguage = (codeEl) => {
-    const classList = (codeEl.className || "").split(/\s+/);
-    for (const cls of classList) {
-      if (cls.startsWith("language-")) {
-        return cls.replace("language-", "").trim();
-      }
-    }
-    for (const cls of classList) {
-      if (cls && cls !== "hljs") {
-        return cls.trim();
-      }
-    }
-    return "Code";
-  };
-
-  const copyToClipboard = (text, btn) => {
-    const setSuccess = () => {
-      btn.classList.add("copied");
-      btn.innerHTML = `${CHECK_ICON_SVG}<span>Copied!</span>`;
-      setTimeout(() => {
-        btn.classList.remove("copied");
-        btn.innerHTML = `${COPY_ICON_SVG}<span>Copy code</span>`;
-      }, 2000);
-    };
-
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(setSuccess).catch(() => {
-        fallbackCopy(text, setSuccess);
-      });
-    } else {
-      fallbackCopy(text, setSuccess);
-    }
-  };
-
-  const fallbackCopy = (text, onSuccess) => {
-    const ta = document.createElement("textarea");
-    ta.value = text;
-    ta.setAttribute("readonly", "");
-    ta.style.position = "fixed";
-    ta.style.opacity = "0";
-    document.body.appendChild(ta);
-    ta.select();
-    try {
-      document.execCommand("copy");
-      onSuccess();
-    } catch (e) {
-      console.error("Clipboard fallback copy failed: ", e);
-    } finally {
-      ta.remove();
-    }
-  };
-
-  const enhanceCodeBlocks = (root = document) => {
-    const preList = root.querySelectorAll("pre");
-    preList.forEach((pre) => {
-      // Prevent duplicate wrappers if called repeatedly
-      if (pre.closest(".code-block-container") || pre.dataset.enhanced === "true") {
-        return;
-      }
-
-      const code = pre.querySelector("code");
-      if (!code) return;
-
-      pre.dataset.enhanced = "true";
-
-      // 1. Syntax highlighting via highlight.js if loaded
-      if (window.hljs && typeof window.hljs.highlightElement === "function") {
-        window.hljs.highlightElement(code);
-      }
-
-      // 2. Extract language
-      const lang = getCodeLanguage(code);
-
-      // 3. Construct modern ChatGPT-style code container
-      const container = document.createElement("div");
-      container.className = "code-block-container";
-
-      const header = document.createElement("div");
-      header.className = "code-header";
-
-      const langSpan = document.createElement("span");
-      langSpan.className = "code-lang";
-      langSpan.textContent = lang.toUpperCase();
-
-      const copyBtn = document.createElement("button");
-      copyBtn.type = "button";
-      copyBtn.className = "copy-btn";
-      copyBtn.setAttribute("aria-label", `Copy ${lang} code`);
-      copyBtn.innerHTML = `${COPY_ICON_SVG}<span>Copy code</span>`;
-
-      copyBtn.addEventListener("click", () => {
-        const rawCode = code.innerText || code.textContent || "";
-        copyToClipboard(rawCode, copyBtn);
-      });
-
-      header.appendChild(langSpan);
-      header.appendChild(copyBtn);
-
-      const content = document.createElement("div");
-      content.className = "code-content";
-
-      // Move pre inside container
-      pre.parentNode.insertBefore(container, pre);
-      content.appendChild(pre);
-      container.appendChild(header);
-      container.appendChild(content);
-    });
-  };
-
-  // Expose globally for dynamic AJAX / fetch message rendering
-  window.enhanceCodeBlocks = enhanceCodeBlocks;
-
   let messageCount = 0;
 
   const formatTimestamp = () => {
@@ -198,9 +80,9 @@ document.addEventListener("DOMContentLoaded", () => {
     bubble.innerHTML = isTyping ? typingHTML : messageHTML;
     chatContainer.appendChild(bubble);
 
-    // Enhance code blocks inside bot response
-    if (isBot && !isTyping) {
-      enhanceCodeBlocks(bubble);
+    // Initialize code blocks on the newly appended bot bubble
+    if (isBot && !isTyping && typeof window.initializeCodeBlocks === 'function') {
+      window.initializeCodeBlocks(bubble);
     }
 
     chatContainer.scrollTop = chatContainer.scrollHeight;
@@ -406,6 +288,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // Call checkTextareaEmpty on page load
   checkTextareaEmpty(); // Initial check
 
-  // Enhance any initial code blocks in the chat container
-  enhanceCodeBlocks(chatContainer);
+  // Initialize any initial code blocks in the chat container
+  if (typeof window.initializeCodeBlocks === 'function') {
+    window.initializeCodeBlocks(chatContainer);
+  }
 });

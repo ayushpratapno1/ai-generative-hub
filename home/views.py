@@ -13,11 +13,10 @@ logger = logging.getLogger(__name__)
 def home(request):
     return render(request, "index.html")
 
-@login_required
 def chat(request):
     return render(request, "chat.html")
 
-@login_required
+
 def chatAPI(request):
     if request.method == "POST":
         prompt = request.POST.get("prompt", "")
@@ -70,7 +69,21 @@ def chatAPI(request):
             request.session["chat_history"] = updated_history
 
             # 8. Convert to HTML and return
-            html_reply = markdown2.markdown(response.text.strip())
+            #    - Use markdown2 with fenced-code-blocks and highlightjs-lang to generate
+            #      standard <pre><code class="language-[lang]"> blocks compatible with highlight.js.
+            #    - safe_mode="escape" ensures all raw HTML/JS tags are sanitized to prevent XSS.
+            raw_text = response.text.strip() if response.text else ""
+            html_reply = markdown2.markdown(
+                raw_text,
+                extras=[
+                    "fenced-code-blocks",
+                    "highlightjs-lang",
+                    "code-friendly",
+                    "cuddled-lists",
+                    "tables",
+                ],
+                safe_mode="escape",
+            )
             return JsonResponse({"message": html_reply})
 
         except Exception as e:
